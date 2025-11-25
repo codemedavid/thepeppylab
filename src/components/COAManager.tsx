@@ -83,16 +83,31 @@ const COAManager: React.FC = () => {
 
   const fetchCOAReports = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('coa_reports')
         .select('*')
         .order('test_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching COA reports:', error);
+        
+        // Check if table doesn't exist
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          alert('❌ COA reports table not found. Please run the database migration to create the table.');
+        } else if (error.code === '42501' || error.message?.includes('permission')) {
+          alert('❌ Permission denied. Please check your database permissions.');
+        } else {
+          alert(`❌ Failed to load COA reports: ${error.message || 'Unknown error'}`);
+        }
+        throw error;
+      }
+      
       setCOAReports(data || []);
     } catch (error) {
       console.error('Error fetching COA reports:', error);
-      alert('Failed to load COA reports');
+      // Don't show alert here if we already showed it above
+      setCOAReports([]);
     } finally {
       setLoading(false);
     }
