@@ -4,6 +4,7 @@ import Hero from './Hero';
 import TrustSection from './TrustSection';
 import ProductDetailModal from './ProductDetailModal';
 import type { Product, ProductVariation, CartItem } from '../types';
+import { useCategories } from '../hooks/useCategories';
 import { Search, Filter, Package } from 'lucide-react';
 
 interface MenuProps {
@@ -17,6 +18,7 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'purity'>('name');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { categories } = useCategories();
   const productsRef = useRef<HTMLDivElement | null>(null);
 
   // Filter products based on search
@@ -25,8 +27,21 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems }) => {
     product.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Identify Peptide Category ID (assuming it contains "peptide" in name)
+  const peptideCategoryIds = categories
+    .filter(c => c.name.toLowerCase().includes('peptide'))
+    .map(c => c.id);
+
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // Priority: Peptide products first
+    const isAPeptide = peptideCategoryIds.includes(a.category);
+    const isBPeptide = peptideCategoryIds.includes(b.category);
+
+    if (isAPeptide && !isBPeptide) return -1;
+    if (!isAPeptide && isBPeptide) return 1;
+
+    // Secondary Sort: User selection
     switch (sortBy) {
       case 'name':
         return a.name.localeCompare(b.name);

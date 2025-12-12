@@ -340,7 +340,7 @@ Please attach your payment screenshot when sending this message.
 📱 CONTACT METHOD
 Telegram: https://t.me/anntpl
 
-📋 ORDER ID: ${orderData.id}
+📋 ORDER NUMBER: #${orderData.order_number || orderData.id}
 
 Please confirm this order. Thank you!
       `.trim();

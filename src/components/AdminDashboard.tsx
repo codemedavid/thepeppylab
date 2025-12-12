@@ -1101,14 +1101,14 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-200">
                   <img
-                    src="/assets/logo.jpg"
-                    alt="peptalk.ph"
+                    src="/assets/logo.jpeg"
+                    alt="The Peppy Lab"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
                   <h1 className="text-base font-bold text-theme-text">
-                    peptalk.ph
+                    The Peppy Lab
                   </h1>
                   <p className="text-xs text-gray-500">
                     Admin Dashboard
