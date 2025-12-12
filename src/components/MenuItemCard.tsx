@@ -4,7 +4,7 @@ import type { Product, ProductVariation } from '../types';
 
 interface MenuItemCardProps {
   product: Product;
-  onAddToCart: (product: Product, variation?: ProductVariation, quantity?: number) => void;
+  onAddToCart: (product: Product, variation?: ProductVariation, quantity?: number, isCompleteSet?: boolean) => void;
   cartQuantity?: number;
   onUpdateQuantity?: (index: number, quantity: number) => void;
   onProductClick?: (product: Product) => void;
@@ -20,17 +20,26 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
     product.variations && product.variations.length > 0 ? product.variations[0] : undefined
   );
   const [quantity, setQuantity] = useState(1);
+  const [isCompleteSet, setIsCompleteSet] = useState(false); // Track if customer wants complete set
 
-  const currentPrice = selectedVariation
-    ? selectedVariation.price
-    : (product.discount_active && product.discount_price)
-      ? product.discount_price
-      : product.base_price;
 
-  const hasDiscount = !selectedVariation && product.discount_active && product.discount_price;
+  // Calculate price based on complete set selection
+  const getCurrentPrice = () => {
+    if (isCompleteSet && product.is_complete_set && product.complete_set_price) {
+      return product.complete_set_price;
+    }
+    return selectedVariation
+      ? selectedVariation.price
+      : (product.discount_active && product.discount_price)
+        ? product.discount_price
+        : product.base_price;
+  };
+
+  const currentPrice = getCurrentPrice();
+  const hasDiscount = !selectedVariation && product.discount_active && product.discount_price && !isCompleteSet;
 
   const handleAddToCart = () => {
-    onAddToCart(product, selectedVariation, quantity);
+    onAddToCart(product, selectedVariation, quantity, isCompleteSet);
     setQuantity(1);
   };
 
@@ -106,7 +115,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
         <p className="text-xs text-gray-500 mb-2 line-clamp-2 min-h-[2rem] leading-snug">{product.description}</p>
 
         {/* Variations (Sizes) */}
-        <div className="mb-2 min-h-[1.5rem]">
+        <div className="mb-2 space-y-1.5">
           {product.variations && product.variations.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {product.variations.slice(0, 3).map((variation) => {
@@ -140,6 +149,42 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                   +{product.variations.length - 3}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Vial Only vs Complete Set Options */}
+          {product.is_complete_set && product.complete_set_price && (
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCompleteSet(false);
+                }}
+                className={`
+                  px-1.5 py-0.5 text-[10px] rounded border transition-colors relative z-20
+                  ${!isCompleteSet
+                    ? 'bg-theme-text text-white border-theme-text'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-theme-text'
+                  }
+                `}
+              >
+                Vial Only
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCompleteSet(true);
+                }}
+                className={`
+                  px-1.5 py-0.5 text-[10px] rounded border transition-colors relative z-20
+                  ${isCompleteSet
+                    ? 'bg-[#FFE8D6] text-theme-text border-[#FFE8D6]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#FFE8D6]'
+                  }
+                `}
+              >
+                🎁 Complete Set
+              </button>
             </div>
           )}
         </div>

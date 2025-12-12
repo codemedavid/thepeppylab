@@ -21,27 +21,34 @@ export function useCart() {
     localStorage.setItem('peptide_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product: Product, variation?: ProductVariation, quantity: number = 1) => {
+  const addToCart = (product: Product, variation?: ProductVariation, quantity: number = 1, isCompleteSet: boolean = false) => {
     // Check stock availability
     const availableStock = variation ? variation.stock_quantity : product.stock_quantity;
-    
+
     if (availableStock === 0) {
       alert(`Sorry, ${product.name}${variation ? ` ${variation.name}` : ''} is out of stock.`);
       return;
     }
 
-    const price = variation ? variation.price : (product.discount_active && product.discount_price ? product.discount_price : product.base_price);
-    
+    // Determine price based on complete set selection
+    let price: number;
+    if (isCompleteSet && product.is_complete_set && product.complete_set_price) {
+      price = product.complete_set_price;
+    } else {
+      price = variation ? variation.price : (product.discount_active && product.discount_price ? product.discount_price : product.base_price);
+    }
+
     const existingItemIndex = cartItems.findIndex(
-      item => item.product.id === product.id && 
-              (variation ? item.variation?.id === variation.id : !item.variation)
+      item => item.product.id === product.id &&
+        (variation ? item.variation?.id === variation.id : !item.variation) &&
+        item.isCompleteSet === isCompleteSet // Also match complete set selection
     );
 
     if (existingItemIndex > -1) {
       // Update existing item - check if new total exceeds stock
       const currentQuantity = cartItems[existingItemIndex].quantity;
       const newQuantity = currentQuantity + quantity;
-      
+
       if (newQuantity > availableStock) {
         const remainingStock = availableStock - currentQuantity;
         if (remainingStock > 0) {
@@ -52,7 +59,7 @@ export function useCart() {
           return;
         }
       }
-      
+
       const updatedItems = [...cartItems];
       updatedItems[existingItemIndex].quantity += quantity;
       setCartItems(updatedItems);
@@ -62,12 +69,13 @@ export function useCart() {
         alert(`Only ${availableStock} item(s) available in stock. Added ${availableStock} to your cart.`);
         quantity = availableStock;
       }
-      
+
       const newItem: CartItem = {
         product,
         variation,
         quantity,
-        price
+        price,
+        isCompleteSet // Track if customer selected complete set
       };
       setCartItems([...cartItems, newItem]);
     }
@@ -82,7 +90,7 @@ export function useCart() {
     // Check stock availability
     const item = cartItems[index];
     const availableStock = item.variation ? item.variation.stock_quantity : item.product.stock_quantity;
-    
+
     if (quantity > availableStock) {
       alert(`Only ${availableStock} item(s) available in stock.`);
       quantity = availableStock;

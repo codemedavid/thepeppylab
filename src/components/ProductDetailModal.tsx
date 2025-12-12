@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { X, Package, Beaker, ShoppingCart, Plus, Minus, Sparkles, Shield } from 'lucide-react';
+import { X, Package, Beaker, ShoppingCart, Plus, Minus, Sparkles } from 'lucide-react';
 import type { Product, ProductVariation } from '../types';
 
 interface ProductDetailModalProps {
   product: Product;
   onClose: () => void;
-  onAddToCart: (product: Product, variation: ProductVariation | undefined, quantity: number) => void;
+  onAddToCart: (product: Product, variation: ProductVariation | undefined, quantity: number, isCompleteSet?: boolean) => void;
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose, onAddToCart }) => {
@@ -20,9 +20,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
     getFirstAvailableVariation()
   );
   const [quantity, setQuantity] = useState(1);
+  const [isCompleteSet, setIsCompleteSet] = useState(false);
 
   const hasDiscount = product.discount_active && product.discount_price;
-  const currentPrice = selectedVariation?.price || (hasDiscount ? product.discount_price! : product.base_price);
+
+  // Determine current price based on complete set selection
+  const getCurrentPrice = () => {
+    if (isCompleteSet && product.is_complete_set && product.complete_set_price) {
+      return product.complete_set_price;
+    }
+    return selectedVariation?.price || (hasDiscount ? product.discount_price! : product.base_price);
+  };
+
+  const currentPrice = getCurrentPrice();
   const showPurity = Boolean(product.purity_percentage);
 
   // Check if product has any available stock
@@ -34,7 +44,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
   const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
   const handleAddToCart = () => {
-    onAddToCart(product, selectedVariation, quantity);
+    onAddToCart(product, selectedVariation, quantity, isCompleteSet);
     onClose();
   };
 
@@ -204,6 +214,68 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                       <p className="text-xs text-red-600 mt-1.5 font-semibold">
                         ⚠️ This size is currently out of stock. Please select another size.
                       </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Complete Set Option */}
+                {product.is_complete_set && product.complete_set_price && (
+                  <div className="mb-3 sm:mb-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 border-purple-300/30">
+                    <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2 sm:mb-3">
+                      Choose Option:
+                    </label>
+                    <div className="space-y-2 sm:space-y-3">
+                      {/* Individual Option */}
+                      <label className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white rounded-lg border-2 transition-all cursor-pointer hover:border-theme-accent/50 ${!isCompleteSet ? 'border-theme-accent' : 'border-gray-200'}">
+                        <input
+                          type="radio"
+                          name="productOption"
+                          checked={!isCompleteSet}
+                          onChange={() => setIsCompleteSet(false)}
+                          className="mt-0.5 w-4 h-4 text-theme-accent focus:ring-theme-accent"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-gray-900 text-xs sm:text-sm">Individual Product</span>
+                            <span className="font-bold text-theme-accent text-sm sm:text-base">
+                              ₱{(selectedVariation?.price || (hasDiscount ? product.discount_price! : product.base_price)).toLocaleString('en-PH')}
+                            </span>
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Peptide vial only</p>
+                        </div>
+                      </label>
+
+                      {/* Complete Set Option */}
+                      <label className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-white rounded-lg border-2 transition-all cursor-pointer hover:border-purple-500/50 ${isCompleteSet ? 'border-purple-500' : 'border-gray-200'}">
+                        <input
+                          type="radio"
+                          name="productOption"
+                          checked={isCompleteSet}
+                          onChange={() => setIsCompleteSet(true)}
+                          className="mt-0.5 w-4 h-4 text-purple-600 focus:ring-purple-500"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-gray-900 text-xs sm:text-sm flex items-center gap-1">
+                              Complete Set <span className="text-purple-600">🎁</span>
+                            </span>
+                            <span className="font-bold text-purple-600 text-sm sm:text-base">
+                              ₱{product.complete_set_price.toLocaleString('en-PH')}
+                            </span>
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Includes all accessories</p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* Show what's included when complete set is selected */}
+                    {isCompleteSet && product.complete_set_description && (
+                      <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-white rounded-lg border border-purple-200">
+                        <p className="text-[10px] sm:text-xs font-semibold text-purple-700 mb-1 sm:mb-1.5">✨ Complete Set Includes:</p>
+                        <p className="text-[10px] sm:text-xs text-gray-600 whitespace-pre-line leading-relaxed">
+                          {product.complete_set_description}
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}

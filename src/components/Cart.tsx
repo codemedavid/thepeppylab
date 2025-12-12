@@ -116,6 +116,11 @@ const Cart: React.FC<CartProps> = ({
                             Variation: {item.variation.name}
                           </p>
                         )}
+                        {item.isCompleteSet && (
+                          <p className="text-xs md:text-sm text-purple-700 font-semibold flex items-center gap-1">
+                            🎁 Complete Set
+                          </p>
+                        )}
                         {item.product.purity_percentage && item.product.purity_percentage > 0 ? (
                           <div className="flex items-center gap-2 mt-1">
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium bg-green-100 text-green-700">

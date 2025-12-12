@@ -9,7 +9,7 @@ import { Search, Filter, Package } from 'lucide-react';
 
 interface MenuProps {
   menuItems: Product[];
-  addToCart: (product: Product, variation?: ProductVariation, quantity?: number) => void;
+  addToCart: (product: Product, variation?: ProductVariation, quantity?: number, isCompleteSet?: boolean) => void;
   cartItems: CartItem[];
   updateQuantity: (index: number, quantity: number) => void;
 }
@@ -83,8 +83,8 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems }) => {
         <ProductDetailModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={(product, variation, quantity) => {
-            addToCart(product, variation, quantity);
+          onAddToCart={(product, variation, quantity, isCompleteSet) => {
+            addToCart(product, variation, quantity, isCompleteSet);
           }}
         />
       )}

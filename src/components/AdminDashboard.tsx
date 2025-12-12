@@ -54,7 +54,10 @@ const AdminDashboard: React.FC = () => {
     stock_quantity: 0,
     image_url: null,
     discount_active: false,
-    inclusions: null
+    inclusions: null,
+    is_complete_set: false,
+    complete_set_price: null,
+    complete_set_description: null
   });
 
   const handleAddProduct = () => {
@@ -77,7 +80,10 @@ const AdminDashboard: React.FC = () => {
       stock_quantity: 0,
       image_url: null,
       discount_active: false,
-      inclusions: null
+      inclusions: null,
+      is_complete_set: false,
+      complete_set_price: null,
+      complete_set_description: null
     });
   };
 
@@ -215,6 +221,9 @@ const AdminDashboard: React.FC = () => {
           'featured',
           'image_url',
           'safety_sheet_url',
+          'is_complete_set',
+          'complete_set_price',
+          'complete_set_description',
         ];
 
         const dbPayload: Partial<Product> = {};
@@ -727,6 +736,83 @@ const AdminDashboard: React.FC = () => {
                     </label>
                   </div>
                 </div>
+              </div>
+
+              {/* Complete Set Pricing */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-300/30 rounded-lg p-3 md:p-4">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
+                  <h3 className="text-sm md:text-base font-bold text-gray-900 flex items-center gap-1.5">
+                    <span className="text-base md:text-lg">🎁</span>
+                    Complete Set Pricing
+                  </h3>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_complete_set || false}
+                      onChange={(e) => {
+                        if (!e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            is_complete_set: false,
+                            complete_set_price: null,
+                            complete_set_description: null
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            is_complete_set: true,
+                            complete_set_price: formData.complete_set_price || null,
+                            complete_set_description: formData.complete_set_description || null
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-xs font-semibold text-gray-700">Offer Complete Set</span>
+                  </label>
+                </div>
+                {formData.is_complete_set ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        Complete Set Price (₱) *
+                      </label>
+                      <input
+                        type="number"
+                        step="1"
+                        value={formData.complete_set_price || ''}
+                        onChange={(e) => setFormData({ ...formData, complete_set_price: Number(e.target.value) || null })}
+                        className="input-field text-sm"
+                        placeholder="Enter complete set price (e.g., 2500)"
+                      />
+                      <p className="text-xs text-gray-500 mt-1 flex items-start gap-1.5">
+                        <span className="text-purple-600">💡</span>
+                        <span>This is the special price when customers buy the product with all accessories as a complete set.</span>
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        What's Included in Complete Set?
+                      </label>
+                      <textarea
+                        value={formData.complete_set_description || ''}
+                        onChange={(e) => setFormData({ ...formData, complete_set_description: e.target.value || null })}
+                        className="input-field text-sm min-h-[100px]"
+                        placeholder="Example:&#10;• Peptide vial&#10;• Syringe for reconstitution&#10;• 6 Insulin syringes&#10;• 10pcs Alcohol pads&#10;• Printed injection guide&#10;• Vial case and cap&#10;• Digital tracking spreadsheet"
+                        rows={6}
+                      />
+                      <p className="text-xs text-gray-500 mt-2 flex items-start gap-1.5">
+                        <span className="text-purple-600">📝</span>
+                        <span>List all items included in the complete set. This will be shown to customers when they view the product.</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-xs text-gray-500 mb-2">Enable "Offer Complete Set" to add special complete set pricing</p>
+                    <p className="text-xs text-gray-400">Customers will be able to choose between individual product or complete set with accessories</p>
+                  </div>
+                )}
               </div>
 
               {/* Product Image */}

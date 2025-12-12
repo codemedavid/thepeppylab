@@ -18,6 +18,11 @@ export interface Product {
   storage_conditions: string;
   inclusions: string[] | null;
 
+  // Complete set pricing
+  is_complete_set: boolean;
+  complete_set_price: number | null;
+  complete_set_description: string | null;
+
   // Stock and availability
   stock_quantity: number;
   available: boolean;
@@ -80,6 +85,7 @@ export interface CartItem {
   variation?: ProductVariation;
   quantity: number;
   price: number;
+  isCompleteSet?: boolean; // Track if customer selected complete set option
 }
 
 // Order Types
