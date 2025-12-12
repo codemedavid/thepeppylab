@@ -443,19 +443,19 @@ const AdminDashboard: React.FC = () => {
     return (
       <>
         {variationManagerModal}
-        <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
-          <div className="bg-white shadow-md border-b border-gold-300/30">
+        <div className="min-h-screen bg-theme-bg">
+          <div className="bg-white shadow-md border-b border-gray-200">
             <div className="max-w-6xl mx-auto px-3 sm:px-4">
               <div className="flex items-center justify-between h-12 md:h-14 gap-2">
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleCancel}
-                    className="text-gray-700 hover:text-gold-600 transition-colors flex items-center gap-1 group"
+                    className="text-theme-text hover:text-theme-accent transition-colors flex items-center gap-1 group"
                   >
                     <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                     <span className="text-xs md:text-sm">Back</span>
                   </button>
-                  <h1 className="text-sm md:text-base font-bold bg-gradient-to-r from-black to-gray-900 bg-clip-text text-transparent">
+                  <h1 className="text-sm md:text-base font-bold text-theme-text">
                     {currentView === 'add' ? '✨ Add New' : '✏️ Edit Product'}
                   </h1>
                 </div>
@@ -467,7 +467,7 @@ const AdminDashboard: React.FC = () => {
                   <button
                     onClick={handleSaveProduct}
                     disabled={isProcessing}
-                    className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black px-2 md:px-3 py-1 rounded-md transition-all flex items-center gap-1 shadow-sm hover:shadow disabled:opacity-50 text-xs"
+                    className="btn-primary text-xs px-2 md:px-3 py-1 flex items-center gap-1 disabled:opacity-50"
                   >
                     <Save className="h-3 w-3" />
                     {isProcessing ? 'Saving...' : 'Save'}
@@ -478,7 +478,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 md:py-4">
-            <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-4 lg:p-5 space-y-3 md:space-y-4 border border-gold-300/30">
+            <div className="bg-white rounded-lg md:rounded-xl shadow-soft p-3 md:p-4 lg:p-5 space-y-3 md:space-y-4 border border-gray-200">
               {/* Basic Information */}
               <div>
                 <h3 className="text-sm md:text-base font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-1.5">

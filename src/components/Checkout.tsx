@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Package, CreditCard, Sparkles, Heart, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
 import type { CartItem } from '../types';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { useShippingLocations } from '../hooks/useShippingLocations';
@@ -146,6 +146,38 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
     }
   };
 
+  // Generate next TPL order number
+  const generateOrderNumber = async (): Promise<string> => {
+    try {
+      // Get the latest order number from database
+      const { data, error } = await supabase
+        .from('orders')
+        .select('order_number')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching last order:', error);
+      }
+
+      // Extract number from last order or start at 1
+      let nextNumber = 1;
+      if (data?.order_number) {
+        const match = data.order_number.match(/TPL#(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
+
+      // Format with leading zeros (e.g., TPL#001, TPL#002, ..., TPL#999)
+      return `TPL#${nextNumber.toString().padStart(3, '0')}`;
+    } catch (error) {
+      console.error('Error generating order number:', error);
+      // Fallback to timestamp-based number
+      return `TPL#${Date.now().toString().slice(-6)}`;
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (!paymentProof) {
@@ -179,9 +211,13 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
       }));
 
       // Save order to database
+      // Generate custom order number
+      const orderNumber = await generateOrderNumber();
+
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert([{
+          order_number: orderNumber,
           customer_name: fullName,
           customer_email: email,
           customer_phone: phone,
@@ -282,24 +318,21 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         }
       }
 
-      // Get current date and time
-      const now = new Date();
-      const dateTimeStamp = now.toLocaleString('en-PH', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
+      // Format order details for Telegram
+      const dateTimeStamp = new Date().toLocaleString('en-PH', {
+        dateStyle: 'full',
+        timeStyle: 'short',
+        timeZone: 'Asia/Manila'
       });
 
       const orderDetails = `
-✨PeptalkPH - NEW ORDER
+✨The Peppy Lab - NEW ORDER
 
 📅 ORDER DATE & TIME
 ${dateTimeStamp}
+
+🔖 ORDER NUMBER
+${orderData.order_number}
 
 👤 CUSTOMER INFORMATION
 Name: ${fullName}
@@ -362,10 +395,7 @@ Please confirm this order. Thank you!
         console.warn('Auto-copy failed', err);
       }
 
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       if (contactUrl) {
-        // If mobile, try to open app directly, otherwise generic window open
         // Adding a small delay to ensure clipboard write finishes
         setTimeout(() => {
           window.open(contactUrl, '_blank');
@@ -428,30 +458,29 @@ Please confirm this order. Thank you!
 
   if (step === 'confirmation') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center px-4 py-12">
         <div className="max-w-2xl w-full">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center border-2 border-gold-300/30">
-            <div className="bg-gradient-to-br from-gold-500 to-gold-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl animate-bounce border-2 border-gold-700">
-              <ShieldCheck className="w-14 h-14 text-black" />
+          <div className="bg-white rounded-xl shadow-soft p-8 md:p-12 text-center border border-gray-200">
+            <div className="bg-theme-accent/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShieldCheck className="w-14 h-14 text-theme-accent" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 flex items-center justify-center gap-2 flex-wrap">
-              <span className="bg-gradient-to-r from-black to-gray-900 bg-clip-text text-transparent">COMPLETE YOUR ORDER</span>
-              <Sparkles className="w-7 h-7 text-gold-600" />
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-theme-text">
+              COMPLETE YOUR ORDER
             </h1>
             <p className="text-gray-600 mb-8 text-base md:text-lg leading-relaxed">
               Copy the order message below and send it via Telegram along with your payment screenshot.
             </p>
 
             {/* Order Message Display */}
-            <div className="bg-gray-50 rounded-2xl p-6 mb-6 text-left border-2 border-gold-300/30">
+            <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left border border-gray-200">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-gold-600" />
+                  <MessageCircle className="w-5 h-5 text-theme-accent" />
                   Your Order Message
                 </h3>
                 <button
                   onClick={handleCopyMessage}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white rounded-lg font-medium transition-all text-sm shadow-md hover:shadow-lg border border-gold-500/20"
+                  className="btn-primary flex items-center gap-2 text-sm"
                 >
                   {copied ? (
                     <>
@@ -466,7 +495,7 @@ Please confirm this order. Thank you!
                   )}
                 </button>
               </div>
-              <div className="bg-white rounded-lg p-4 border border-gray-300 max-h-64 overflow-y-auto">
+              <div className="bg-white rounded-lg p-4 border border-gray-200 max-h-64 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
                   {orderMessage}
                 </pre>
@@ -496,10 +525,9 @@ Please confirm this order. Thank you!
               )}
             </div>
 
-            <div className="bg-gradient-to-r from-gold-50 to-gold-100/50 rounded-2xl p-6 mb-8 text-left border-2 border-gold-300/30">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-theme-bg rounded-xl p-6 mb-8 text-left border border-gray-200">
+              <h3 className="font-bold text-theme-text mb-4">
                 What Happens Next?
-                <Sparkles className="w-5 h-5 text-gold-600" />
               </h3>
               <ul className="space-y-3 text-sm md:text-base text-gray-700">
                 <li className="flex items-start gap-3">
@@ -526,9 +554,8 @@ Please confirm this order. Thank you!
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 window.location.href = '/';
               }}
-              className="w-full bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 border-2 border-gold-700"
+              className="btn-secondary w-full flex items-center justify-center gap-2"
             >
-              <Heart className="w-5 h-5 animate-pulse" />
               Continue Shopping
             </button>
           </div>
@@ -543,26 +570,23 @@ Please confirm this order. Thank you!
         <div className="container mx-auto px-3 md:px-4 max-w-6xl">
           <button
             onClick={onBack}
-            className="text-gray-700 hover:text-gold-600 font-medium mb-4 md:mb-6 flex items-center gap-2 transition-colors group"
+            className="text-theme-text hover:text-theme-accent font-medium mb-4 md:mb-6 flex items-center gap-2 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm md:text-base">Back to Cart</span>
           </button>
 
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-black to-gray-900 bg-clip-text text-transparent mb-6 md:mb-8 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-theme-text mb-6 md:mb-8">
             Checkout
-            <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-gold-600" />
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
             <div className="lg:col-span-2 space-y-4 md:space-y-6">
               {/* Customer Information */}
-              <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
-                  <div className="bg-gradient-to-br from-gold-500 to-gold-600 p-2 rounded-xl">
-                    <Package className="w-5 h-5 md:w-6 md:h-6 text-black" />
-                  </div>
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+                  <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                   Customer Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -609,11 +633,9 @@ Please confirm this order. Thank you!
               </div>
 
               {/* Shipping Address */}
-              <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
-                  <div className="bg-gradient-to-br from-gold-500 to-gold-600 p-2 rounded-xl">
-                    <Package className="w-5 h-5 md:w-6 md:h-6 text-black" />
-                  </div>
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+                  <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                   Shipping Address
                 </h2>
                 <div className="space-y-4">
@@ -688,9 +710,9 @@ Please confirm this order. Thank you!
               </div>
 
               {/* Shipping Location Selection */}
-              <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
-                  <Package className="w-5 h-5 md:w-6 md:h-6 text-gold-600" />
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-2 md:mb-3 flex items-center gap-2">
+                  <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                   Choose Shipping Location *
                 </h2>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
@@ -702,8 +724,8 @@ Please confirm this order. Thank you!
                       key={loc.id}
                       onClick={() => setShippingLocation(loc.id as 'NCR' | 'LUZON' | 'VISAYAS_MINDANAO')}
                       className={`p-3 rounded-lg border-2 transition-all ${shippingLocation === loc.id
-                        ? 'border-gold-500 bg-gold-50'
-                        : 'border-gray-200 hover:border-gold-300'
+                        ? 'border-theme-accent bg-theme-accent/5'
+                        : 'border-gray-200 hover:border-theme-accent/50'
                         }`}
                     >
                       <p className="font-semibold text-gray-900 text-sm">{loc.id.replace('_', ' & ')}</p>
@@ -716,21 +738,17 @@ Please confirm this order. Thank you!
               <button
                 onClick={handleProceedToPayment}
                 disabled={!isDetailsValid}
-                className={`w-full py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg transition-all transform shadow-lg ${isDetailsValid
-                  ? 'bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white hover:scale-105 hover:shadow-xl border border-gold-500/20'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                className={`btn-primary w-full ${!isDetailsValid ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Proceed to Payment ✨
+                Proceed to Payment
               </button>
             </div>
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 sticky top-24 border-2 border-gold-300/30">
-                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 sticky top-24 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6">
                   Order Summary
-                  <Sparkles className="w-5 h-5 text-gold-600" />
                 </h2>
 
                 <div className="space-y-4 mb-6">
@@ -833,28 +851,28 @@ Please confirm this order. Thank you!
   const paymentMethodInfo = paymentMethods.find(pm => pm.id === selectedPaymentMethod);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white py-6 md:py-8">
+    <div className="min-h-screen bg-theme-bg py-6 md:py-8">
       <div className="container mx-auto px-3 md:px-4 max-w-6xl">
         <button
           onClick={() => setStep('details')}
-          className="text-gray-700 hover:text-gold-600 font-medium mb-4 md:mb-6 flex items-center gap-2 transition-colors group"
+          className="text-theme-text hover:text-theme-accent font-medium mb-4 md:mb-6 flex items-center gap-2 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm md:text-base">Back to Details</span>
         </button>
 
-        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-black to-gray-900 bg-clip-text text-transparent mb-6 md:mb-8 flex items-center gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-theme-text mb-6 md:mb-8 flex items-center gap-2">
+          <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-theme-accent" />
           Payment
-          <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-gold-600" />
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {/* Payment Form */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* Shipping Location Selection */}
-            <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
-                <Package className="w-5 h-5 md:w-6 md:h-6 text-gold-600" />
+            <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-theme-text mb-2 md:mb-3 flex items-center gap-2">
+                <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                 Choose Shipping Location *
               </h2>
               <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
@@ -866,8 +884,8 @@ Please confirm this order. Thank you!
                     key={loc.id}
                     onClick={() => setShippingLocation(loc.id as 'NCR' | 'LUZON' | 'VISAYAS_MINDANAO')}
                     className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${shippingLocation === loc.id
-                      ? 'border-gold-500 bg-gold-50'
-                      : 'border-gray-200 hover:border-gold-300'
+                      ? 'border-theme-accent bg-theme-accent/5'
+                      : 'border-gray-200 hover:border-theme-accent/50'
                       }`}
                   >
                     <div className="text-left">
@@ -875,7 +893,7 @@ Please confirm this order. Thank you!
                       <p className="text-sm text-gray-500">₱{loc.fee.toLocaleString()}</p>
                     </div>
                     {shippingLocation === loc.id && (
-                      <div className="w-6 h-6 bg-gold-500 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 bg-theme-accent rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
@@ -885,11 +903,9 @@ Please confirm this order. Thank you!
             </div>
 
             {/* Payment Method Selection */}
-            <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
-                <div className="bg-gradient-to-br from-gold-500 to-gold-600 p-2 rounded-xl">
-                  <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-black" />
-                </div>
+            <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                 Payment Method
               </h2>
 
@@ -899,13 +915,13 @@ Please confirm this order. Thank you!
                     key={method.id}
                     onClick={() => setSelectedPaymentMethod(method.id)}
                     className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${selectedPaymentMethod === method.id
-                      ? 'border-gold-500 bg-gold-50'
-                      : 'border-gray-200 hover:border-gold-300'
+                      ? 'border-theme-accent bg-theme-accent/5'
+                      : 'border-gray-200 hover:border-theme-accent/50'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center">
-                        <CreditCard className="w-6 h-6 text-gold-600" />
+                        <CreditCard className="w-6 h-6 text-theme-accent" />
                       </div>
                       <div className="text-left">
                         <p className="font-semibold text-gray-900">{method.name}</p>
@@ -913,8 +929,8 @@ Please confirm this order. Thank you!
                       </div>
                     </div>
                     {selectedPaymentMethod === method.id && (
-                      <div className="w-6 h-6 bg-gold-600 rounded-full flex items-center justify-center">
-                        <span className="text-black text-xs font-bold">✓</span>
+                      <div className="w-6 h-6 bg-theme-accent rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">✓</span>
                       </div>
                     )}
                   </button>
@@ -922,12 +938,12 @@ Please confirm this order. Thank you!
               </div>
 
               {paymentMethodInfo && (
-                <div className="bg-gold-50 rounded-lg p-6 border border-gold-200">
+                <div className="bg-theme-bg rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">Payment Details</h3>
                   <div className="space-y-2 text-sm text-gray-700 mb-4">
                     <p><strong>Account Number:</strong> {paymentMethodInfo.account_number}</p>
                     <p><strong>Account Name:</strong> {paymentMethodInfo.account_name}</p>
-                    <p><strong>Amount to Pay:</strong> <span className="text-xl font-bold text-gold-600">₱{finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}</span></p>
+                    <p><strong>Amount to Pay:</strong> <span className="text-xl font-bold text-theme-accent">₱{finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}</span></p>
                   </div>
 
                   {paymentMethodInfo.qr_code_url && (
@@ -947,11 +963,9 @@ Please confirm this order. Thank you!
             </div>
 
             {/* Proof of Payment Upload - NEW SECTION */}
-            <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
-                <div className="bg-gradient-to-br from-gold-500 to-gold-600 p-2 rounded-xl">
-                  <Upload className="w-5 h-5 md:w-6 md:h-6 text-black" />
-                </div>
+            <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+              <h2 className="text-xl md:text-2xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+                <Upload className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
                 Upload Proof of Payment *
               </h2>
 
@@ -961,7 +975,7 @@ Please confirm this order. Thank you!
                 </p>
 
                 {!paymentProof ? (
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-gold-500 hover:bg-gold-50/20 transition-all text-center cursor-pointer relative">
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-theme-accent hover:bg-theme-accent/5 transition-all text-center cursor-pointer relative">
                     <input
                       type="file"
                       accept="image/*"
@@ -977,7 +991,7 @@ Please confirm this order. Thank you!
                     </div>
                   </div>
                 ) : (
-                  <div className="relative border-2 border-gold-500/30 rounded-xl p-4 bg-gold-50/10">
+                  <div className="relative border-2 border-theme-accent/30 rounded-xl p-4 bg-theme-accent/5">
                     <div className="flex items-center gap-4">
                       {previewUrl ? (
                         <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
@@ -1009,9 +1023,9 @@ Please confirm this order. Thank you!
           </div>
 
           {/* Contact Method Selection */}
-          <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-gold-600" />
+          <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+            <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
               Preferred Contact Method *
             </h2>
             <div className="grid grid-cols-1 gap-3">
@@ -1039,11 +1053,9 @@ Please confirm this order. Thank you!
           </div>
 
           {/* Additional Notes */}
-          <div className="bg-white rounded-2xl shadow-lg p-5 md:p-6 border-2 border-gold-300/30">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <div className="bg-gradient-to-br from-gold-500 to-gold-600 p-2 rounded-xl">
-                <MessageCircle className="w-5 h-5 text-black" />
-              </div>
+          <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+            <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-theme-accent" />
               Order Notes (Optional)
             </h2>
             <textarea
@@ -1058,10 +1070,7 @@ Please confirm this order. Thank you!
           <button
             onClick={handlePlaceOrder}
             disabled={!contactMethod || !shippingLocation || !paymentProof || uploading}
-            className={`w-full py-3 md:py-4 rounded-2xl font-bold text-lg md:text-xl shadow-lg transition-all flex items-center justify-center gap-2 ${contactMethod && shippingLocation && paymentProof && !uploading
-              ? 'bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white hover:shadow-xl transform hover:scale-105 border border-gold-500/20'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+            className={`btn-primary w-full ${(!contactMethod || !shippingLocation || !paymentProof || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {uploading ? (
               <>
@@ -1079,10 +1088,9 @@ Please confirm this order. Thank you!
 
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 sticky top-24 border-2 border-gold-300/30">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 sticky top-24 border border-gray-200">
+            <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6">
               Final Summary
-              <Sparkles className="w-5 h-5 text-gold-600" />
             </h2>
 
             {/* Customer Info */}

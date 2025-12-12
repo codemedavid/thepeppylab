@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, ShoppingBag, ArrowLeft, CreditCard, Plus, Minus, Sparkles, Heart } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowLeft, CreditCard, Plus, Minus } from 'lucide-react';
 import type { CartItem } from '../types';
 
 interface CartProps {
@@ -23,22 +23,21 @@ const Cart: React.FC<CartProps> = ({
 }) => {
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center px-4 py-12">
         <div className="text-center max-w-md">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border-2 border-blue-100">
-            <div className="bg-gradient-to-br from-black to-gray-900 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-gold-500/30">
-              <ShoppingBag className="w-12 h-12 text-white" />
+          <div className="bg-white rounded-xl shadow-soft p-12 border border-gray-200">
+            <div className="bg-theme-accent/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingBag className="w-12 h-12 text-theme-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3 flex items-center justify-center gap-2">
+            <h2 className="text-2xl font-bold text-theme-text mb-3">
               Your cart is empty
-              <Heart className="w-6 h-6 text-pink-400" />
             </h2>
             <p className="text-gray-600 mb-8">
-              Start adding amazing products to your cart! ✨
+              Start adding amazing products to your cart!
             </p>
             <button
               onClick={onContinueShopping}
-              className="bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-gold-glow transform hover:scale-105 transition-all w-full flex items-center justify-center gap-2 border border-gold-500/20"
+              className="btn-primary w-full flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-5 h-5" />
               Browse Products
@@ -54,21 +53,20 @@ const Cart: React.FC<CartProps> = ({
   const finalTotal = totalPrice;
 
   return (
-    <div className="min-h-screen bg-white py-6 md:py-8">
+    <div className="min-h-screen bg-theme-bg py-6 md:py-8">
       <div className="container mx-auto px-3 md:px-4">
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <button
             onClick={onContinueShopping}
-            className="text-black hover:text-gold-600 font-medium mb-4 flex items-center gap-2 transition-colors group"
+            className="text-theme-text hover:text-theme-accent font-medium mb-4 flex items-center gap-2 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="text-sm md:text-base">Continue Shopping</span>
           </button>
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-theme-text flex items-center gap-2">
               Shopping Cart
-              <Sparkles className="w-6 h-6 text-gold-600" />
             </h1>
             <button
               onClick={clearCart}
@@ -86,11 +84,11 @@ const Cart: React.FC<CartProps> = ({
             {cartItems.map((item, index) => (
               <div
                 key={index}
-                className="bg-white backdrop-blur-sm rounded-lg shadow-lg hover:shadow-xl p-4 md:p-6 transition-all animate-fadeIn border border-gray-200 hover:border-gold-300"
+                className="bg-white rounded-lg shadow-soft hover:shadow-medium p-4 md:p-6 transition-all animate-fadeIn border border-gray-200"
               >
                 <div className="flex gap-4 md:gap-6">
                   {/* Product Image */}
-                  <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden shadow-md border border-gray-300">
+                  <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-50 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
                     {item.product.image_url ? (
                       <img
                         src={item.product.image_url}
@@ -98,7 +96,7 @@ const Cart: React.FC<CartProps> = ({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
+                      <div className="text-3xl md:text-4xl font-bold text-theme-accent">
                         {item.product.name.charAt(0)}
                       </div>
                     )}
@@ -193,10 +191,9 @@ const Cart: React.FC<CartProps> = ({
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white backdrop-blur-sm rounded-lg shadow-xl p-5 md:p-6 sticky top-24 border border-gray-200">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2">
+            <div className="bg-white rounded-lg shadow-soft p-5 md:p-6 sticky top-24 border border-gray-200">
+              <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6">
                 Order Summary
-                <Sparkles className="w-5 h-5 text-gold-600" />
               </h2>
 
               <div className="space-y-3 mb-6">
@@ -217,7 +214,7 @@ const Cart: React.FC<CartProps> = ({
                 <div className="border-t-2 border-dashed border-gray-200 pt-3 mt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-base md:text-lg font-bold text-gray-900">Total</span>
-                    <span className="text-2xl md:text-3xl font-bold text-black">
+                    <span className="text-2xl md:text-3xl font-bold text-theme-text">
                       ₱{finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
                     </span>
                   </div>
@@ -227,7 +224,7 @@ const Cart: React.FC<CartProps> = ({
 
               <button
                 onClick={onCheckout}
-                className="w-full bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white py-3 md:py-4 rounded-lg font-semibold text-sm md:text-base shadow-lg hover:shadow-gold-glow transform hover:scale-105 transition-all mb-3 flex items-center justify-center gap-2 border border-gold-500/20"
+                className="btn-primary w-full mb-3 flex items-center justify-center gap-2"
               >
                 <CreditCard className="w-5 h-5" />
                 Proceed to Checkout
@@ -235,14 +232,14 @@ const Cart: React.FC<CartProps> = ({
 
               <button
                 onClick={onContinueShopping}
-                className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 hover:border-gold-400 py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base transition-all flex items-center justify-center gap-2"
+                className="btn-secondary w-full flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Continue Shopping
               </button>
 
               {/* Trust Badges */}
-              <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-200 space-y-2">
+              <div className="mt-6 pt-6 border-t border-gray-200 space-y-2">
                 <p className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
                   <span className="text-green-500 text-lg">✓</span>
                   Secure checkout

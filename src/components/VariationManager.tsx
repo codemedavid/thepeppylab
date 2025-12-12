@@ -29,7 +29,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
   });
 
   const handleAddVariation = async () => {
-    if (!newVariation.name || newVariation.price <= 0 || newVariation.quantity_mg <= 0) {
+    if (!newVariation.name || newVariation.price <= 0) {
       alert('Please fill in all fields correctly');
       return;
     }
@@ -75,7 +75,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
   };
 
   const handleUpdateVariation = async () => {
-    if (!editingId || !editingVariation.name || editingVariation.price <= 0 || editingVariation.quantity_mg <= 0) {
+    if (!editingId || !editingVariation.name || editingVariation.price <= 0) {
       alert('Please fill in all fields correctly');
       return;
     }
@@ -123,7 +123,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Package className="w-6 h-6" />
-                Manage Size Variations
+                Manage Variety Options
               </h2>
               <p className="text-teal-100 mt-1">Product: {product.name}</p>
               <p className="text-teal-50 text-sm mt-2 bg-teal-700/30 px-3 py-1.5 rounded-lg inline-block">
@@ -144,7 +144,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
           {/* Current Variations */}
           <div className="mb-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-              Current Sizes
+              Current Varieties
               <span className="text-sm font-normal text-gray-500">
                 ({product.variations?.length || 0} variations)
               </span>
@@ -153,8 +153,8 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
             {!product.variations || product.variations.length === 0 ? (
               <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 font-medium">No size variations yet</p>
-                <p className="text-sm text-gray-500 mt-1">Add your first size option below</p>
+                <p className="text-gray-600 font-medium">No variety options yet</p>
+                <p className="text-sm text-gray-500 mt-1">Add your first variety below</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -168,7 +168,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              Size Name *
+                              Variety Name *
                             </label>
                             <input
                               type="text"
@@ -180,7 +180,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
 
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              Quantity (mg) *
+                              Quantity (mg)
                             </label>
                             <input
                               type="number"
@@ -240,12 +240,12 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
                       <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-200 rounded-xl p-4 flex items-center justify-between">
                         <div className="flex-1 grid grid-cols-4 gap-4">
                           <div>
-                            <div className="text-xs text-gray-500 mb-1">Size Name</div>
+                            <div className="text-xs text-gray-500 mb-1">Variety</div>
                             <div className="font-bold text-gray-900">{variation.name}</div>
                           </div>
                           <div>
                             <div className="text-xs text-gray-500 mb-1">Quantity</div>
-                            <div className="font-semibold text-gray-700">{variation.quantity_mg}mg</div>
+                            <div className="font-semibold text-gray-700">{variation.quantity_mg > 0 ? `${variation.quantity_mg}mg` : 'N/A'}</div>
                           </div>
                           <div>
                             <div className="text-xs text-gray-500 mb-1">Price</div>
@@ -292,17 +292,17 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg mb-4"
             >
               <Plus className="w-5 h-5" />
-              {isAdding ? 'Cancel' : 'Add New Size'}
+              {isAdding ? 'Cancel' : 'Add New Variety'}
             </button>
 
             {isAdding && (
               <div className="bg-white border-2 border-teal-300 rounded-xl p-6 space-y-4">
-                <h4 className="font-bold text-gray-900 mb-4">New Size Variation</h4>
+                <h4 className="font-bold text-gray-900 mb-4">New Variety Option</h4>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Size Name *
+                      Variety Name *
                     </label>
                     <input
                       type="text"
@@ -315,7 +315,7 @@ const VariationManager: React.FC<VariationManagerProps> = ({ product, onClose })
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Quantity (mg) *
+                      Quantity (mg)
                     </label>
                     <input
                       type="number"

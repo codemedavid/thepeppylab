@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
 
   return (
     <>
-      <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
+      <header className="bg-white sticky top-0 z-50 border-b-2 border-theme-secondary">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Logo and Brand */}
