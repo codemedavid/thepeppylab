@@ -15,6 +15,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   total: number;
+  is_complete_set?: boolean;
 }
 
 interface Order {
@@ -624,6 +625,17 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                                 {item.variation_name && (
                                   <p className="text-xs text-gray-500">{item.variation_name}</p>
                                 )}
+                                <div className="mt-1">
+                                  {item.is_complete_set ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                      Complete Set
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                      Vial Only
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-3 text-center text-gray-600">x{item.quantity}</td>
                               <td className="px-4 py-3 text-right text-gray-600">₱{item.price.toLocaleString()}</td>

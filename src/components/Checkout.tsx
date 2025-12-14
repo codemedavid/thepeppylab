@@ -207,7 +207,8 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         quantity: item.quantity,
         price: item.price,
         total: item.price * item.quantity,
-        purity_percentage: item.product.purity_percentage
+        purity_percentage: item.product.purity_percentage,
+        is_complete_set: item.isCompleteSet || false
       }));
 
       // Save order to database
