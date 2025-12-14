@@ -16,6 +16,7 @@ interface OrderItem {
   price: number;
   total: number;
   is_complete_set?: boolean;
+  isCompleteSet?: boolean;
 }
 
 interface Order {
@@ -626,7 +627,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                                   <p className="text-xs text-gray-500">{item.variation_name}</p>
                                 )}
                                 <div className="mt-1">
-                                  {item.is_complete_set ? (
+                                  {(item.is_complete_set || item.isCompleteSet) ? (
                                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                       Complete Set
                                     </span>
