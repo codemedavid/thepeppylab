@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ArrowLeft, Package, XCircle, Truck,
   Search, RefreshCw, Eye, Trash2,
-  ChevronDown, Edit, Save
+  ChevronDown, Edit, Save, Filter
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -53,7 +53,8 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'unpaid' | 'paid'>('all');
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>('all');
+  const [filterOrderStatus, setFilterOrderStatus] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -224,11 +225,14 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
   const filteredOrders = useMemo(() => {
     let filtered = orders;
 
-    // Filter by Tab (Payment Status)
-    if (activeTab === 'unpaid') {
-      filtered = filtered.filter(o => o.payment_status === 'pending');
-    } else if (activeTab === 'paid') {
-      filtered = filtered.filter(o => o.payment_status === 'paid');
+    // Filter by Payment Status
+    if (filterPaymentStatus !== 'all') {
+      filtered = filtered.filter(o => o.payment_status === filterPaymentStatus);
+    }
+
+    // Filter by Order Status
+    if (filterOrderStatus !== 'all') {
+      filtered = filtered.filter(o => o.order_status === filterOrderStatus);
     }
 
     // Filter by search query
@@ -243,7 +247,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
     }
 
     return filtered;
-  }, [orders, activeTab, searchQuery]);
+  }, [orders, filterPaymentStatus, filterOrderStatus, searchQuery]);
 
   // View Details Modal (Simplified for now, re-using parts of old logic if needed, but keeping it inline with table view)
   // For this implementation, we will render the table primarily. 
@@ -300,21 +304,44 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
           />
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mt-4 md:mt-6 overflow-x-auto pb-1 no-scrollbar">
-          {(['all', 'unpaid', 'paid'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab
-                ? 'bg-theme-accent text-white shadow-sm'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-theme-accent hover:text-theme-accent'
-                }`}
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+          {/* Payment Status Filter */}
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none z-10">
+              <Filter className="w-4 h-4" />
+            </div>
+            <select
+              value={filterPaymentStatus}
+              onChange={(e) => setFilterPaymentStatus(e.target.value)}
+              className="input-field !pl-10 text-sm w-full appearance-none cursor-pointer relative"
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {tab === 'unpaid' && ' (Pending)'}
-            </button>
-          ))}
+              <option value="all">All Payments</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Order Status Filter */}
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none z-10">
+              <Package className="w-4 h-4" />
+            </div>
+            <select
+              value={filterOrderStatus}
+              onChange={(e) => setFilterOrderStatus(e.target.value)}
+              className="input-field !pl-10 text-sm w-full appearance-none cursor-pointer relative"
+            >
+              <option value="all">All Orders</option>
+              <option value="new">Unfulfilled</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
