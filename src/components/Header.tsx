@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Menu, X, MessageCircle, Calculator } from 'lucide-react';
 
 interface HeaderProps {
   cartItemsCount: number;
@@ -66,10 +66,29 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 </a>
 
                 <button
+                  onClick={() => window.location.href = '/calculator'}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  <Calculator className="w-4 h-4" />
+                  Calculator
+                </button>
+
+                <button
                   onClick={() => window.location.href = '/coa'}
                   className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
                 >
                   Lab Results (COA)
+                </button>
+
+                <button
+                  onClick={() => {
+                    window.location.href = '/calculator';
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                >
+                  <Calculator className="w-5 h-5" />
+                  Peptide Calculator
                 </button>
               </nav>
 
@@ -130,6 +149,17 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
                 >
                   Lab Results (COA)
+                </button>
+
+                <button
+                  onClick={() => {
+                    window.location.href = '/calculator';
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                >
+                  <Calculator className="w-5 h-5" />
+                  Peptide Calculator
                 </button>
 
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">

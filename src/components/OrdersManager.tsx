@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   ArrowLeft, Package, XCircle, Truck,
   Search, RefreshCw, Eye, Trash2,
-  ChevronDown
+  ChevronDown, Edit, Save
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -57,6 +57,55 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<Partial<Order>>({});
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setEditFormData(selectedOrder);
+      setIsEditing(false);
+    }
+  }, [selectedOrder]);
+
+  const handleSaveOrder = async () => {
+    if (!selectedOrder || !editFormData) return;
+
+    try {
+      setIsProcessing(true);
+
+      const updates = {
+        customer_name: editFormData.customer_name ?? selectedOrder.customer_name,
+        customer_email: editFormData.customer_email ?? selectedOrder.customer_email,
+        customer_phone: editFormData.customer_phone ?? selectedOrder.customer_phone,
+        shipping_address: editFormData.shipping_address ?? selectedOrder.shipping_address,
+        shipping_city: editFormData.shipping_city ?? selectedOrder.shipping_city,
+        shipping_state: editFormData.shipping_state ?? selectedOrder.shipping_state,
+        shipping_zip_code: editFormData.shipping_zip_code ?? selectedOrder.shipping_zip_code,
+        shipping_location: editFormData.shipping_location ?? selectedOrder.shipping_location,
+        notes: editFormData.notes ?? selectedOrder.notes,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', selectedOrder.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedOrder = { ...selectedOrder, ...updates };
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
+      setSelectedOrder(updatedOrder);
+      setIsEditing(false);
+      alert('Order details updated successfully.');
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Failed to update order details.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -505,19 +554,30 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Order Details
+                  {isEditing ? 'Edit Order Details' : 'Order Details'}
                 </h2>
                 <p className="text-sm text-theme-accent font-semibold mt-1">
                   {selectedOrder.order_number || `#${selectedOrder.id.slice(0, 8).toUpperCase()}`}
                 </p>
               </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
-                title="Close"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                {!isEditing && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-theme-accent transition-colors"
+                    title="Edit Details"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Close"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
@@ -533,32 +593,65 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                       </div>
                       Customer Information
                     </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-theme-accent/10 flex items-center justify-center text-theme-accent font-bold">
-                          {selectedOrder.customer_name.charAt(0).toUpperCase()}
+
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Name</label>
+                          <input
+                            type="text"
+                            value={editFormData.customer_name || ''}
+                            onChange={e => setEditFormData({ ...editFormData, customer_name: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                          />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{selectedOrder.customer_name}</p>
-                          <p className="text-sm text-gray-500">Customer</p>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Email</label>
+                          <input
+                            type="email"
+                            value={editFormData.customer_email || ''}
+                            onChange={e => setEditFormData({ ...editFormData, customer_email: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Phone</label>
+                          <input
+                            type="tel"
+                            value={editFormData.customer_phone || ''}
+                            onChange={e => setEditFormData({ ...editFormData, customer_phone: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                          />
                         </div>
                       </div>
-                      <div className="h-px bg-gray-200 my-2" />
-                      <div className="grid gap-2 text-sm">
-                        <div className="flex items-start gap-3">
-                          <span className="text-gray-500 w-20 shrink-0">Email:</span>
-                          <span className="font-medium text-gray-900 break-all">{selectedOrder.customer_email}</span>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-theme-accent/10 flex items-center justify-center text-theme-accent font-bold">
+                            {selectedOrder.customer_name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{selectedOrder.customer_name}</p>
+                            <p className="text-sm text-gray-500">Customer</p>
+                          </div>
                         </div>
-                        <div className="flex items-start gap-3">
-                          <span className="text-gray-500 w-20 shrink-0">Phone:</span>
-                          <span className="font-medium text-gray-900">{selectedOrder.customer_phone}</span>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <span className="text-gray-500 w-20 shrink-0">Contact:</span>
-                          <span className="font-medium text-gray-900 capitalize">{selectedOrder.contact_method || 'Not specified'}</span>
+                        <div className="h-px bg-gray-200 my-2" />
+                        <div className="grid gap-2 text-sm">
+                          <div className="flex items-start gap-3">
+                            <span className="text-gray-500 w-20 shrink-0">Email:</span>
+                            <span className="font-medium text-gray-900 break-all">{selectedOrder.customer_email}</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-gray-500 w-20 shrink-0">Phone:</span>
+                            <span className="font-medium text-gray-900">{selectedOrder.customer_phone}</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-gray-500 w-20 shrink-0">Contact:</span>
+                            <span className="font-medium text-gray-900 capitalize">{selectedOrder.contact_method || 'Not specified'}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Shipping Info */}
@@ -569,32 +662,98 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                       </div>
                       Shipping Details
                     </h3>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-3">
-                        <span className="text-gray-500 w-20 shrink-0">Address:</span>
-                        <span className="font-medium text-gray-900">{selectedOrder.shipping_address}</span>
+
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Address</label>
+                          <textarea
+                            value={editFormData.shipping_address || ''}
+                            onChange={e => setEditFormData({ ...editFormData, shipping_address: e.target.value })}
+                            className="input-field w-full text-sm py-1.5 min-h-[60px]"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">City</label>
+                            <input
+                              type="text"
+                              value={editFormData.shipping_city || ''}
+                              onChange={e => setEditFormData({ ...editFormData, shipping_city: e.target.value })}
+                              className="input-field w-full text-sm py-1.5"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Zip Code</label>
+                            <input
+                              type="text"
+                              value={editFormData.shipping_zip_code || ''}
+                              onChange={e => setEditFormData({ ...editFormData, shipping_zip_code: e.target.value })}
+                              className="input-field w-full text-sm py-1.5"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">State/Province</label>
+                            <input
+                              type="text"
+                              value={editFormData.shipping_state || ''}
+                              onChange={e => setEditFormData({ ...editFormData, shipping_state: e.target.value })}
+                              className="input-field w-full text-sm py-1.5"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Location</label>
+                            <select
+                              value={editFormData.shipping_location || ''}
+                              onChange={e => setEditFormData({ ...editFormData, shipping_location: e.target.value })}
+                              className="input-field w-full text-sm py-1.5"
+                            >
+                              <option value="NCR">NCR</option>
+                              <option value="LUZON">Luzon</option>
+                              <option value="VISAYAS_MINDANAO">Visayas/Mindanao</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Notes</label>
+                          <textarea
+                            value={editFormData.notes || ''}
+                            onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                            rows={2}
+                          />
+                        </div>
                       </div>
-                      <div className="flex items-start gap-3">
-                        <span className="text-gray-500 w-20 shrink-0">City/State:</span>
-                        <span className="font-medium text-gray-900">
-                          {selectedOrder.shipping_city}, {selectedOrder.shipping_state} {selectedOrder.shipping_zip_code}
-                        </span>
-                      </div>
-                      {selectedOrder.shipping_location && (
+                    ) : (
+                      <div className="space-y-3 text-sm">
                         <div className="flex items-start gap-3">
-                          <span className="text-gray-500 w-20 shrink-0">Location:</span>
-                          <span className="font-medium text-theme-accent bg-theme-accent/5 px-2 py-0.5 rounded">
-                            {selectedOrder.shipping_location}
+                          <span className="text-gray-500 w-20 shrink-0">Address:</span>
+                          <span className="font-medium text-gray-900">{selectedOrder.shipping_address}</span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <span className="text-gray-500 w-20 shrink-0">City/State:</span>
+                          <span className="font-medium text-gray-900">
+                            {selectedOrder.shipping_city}, {selectedOrder.shipping_state} {selectedOrder.shipping_zip_code}
                           </span>
                         </div>
-                      )}
-                      {selectedOrder.notes && (
-                        <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                          <p className="text-xs font-bold text-yellow-800 uppercase mb-1">Order Notes</p>
-                          <p className="text-gray-700 italic">"{selectedOrder.notes}"</p>
-                        </div>
-                      )}
-                    </div>
+                        {selectedOrder.shipping_location && (
+                          <div className="flex items-start gap-3">
+                            <span className="text-gray-500 w-20 shrink-0">Location:</span>
+                            <span className="font-medium text-theme-accent bg-theme-accent/5 px-2 py-0.5 rounded">
+                              {selectedOrder.shipping_location}
+                            </span>
+                          </div>
+                        )}
+                        {selectedOrder.notes && (
+                          <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                            <p className="text-xs font-bold text-yellow-800 uppercase mb-1">Order Notes</p>
+                            <p className="text-gray-700 italic">"{selectedOrder.notes}"</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -737,12 +896,37 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
               <div className="text-xs text-gray-400">
                 Created: {new Date(selectedOrder.created_at).toLocaleString()}
               </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="btn-primary px-6 py-2"
-              >
-                Done
-              </button>
+              <div className="flex gap-3">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditFormData(selectedOrder);
+                        setIsEditing(false);
+                      }}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                      disabled={isProcessing}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveOrder}
+                      className="btn-primary px-6 py-2 flex items-center gap-2"
+                      disabled={isProcessing}
+                    >
+                      <Save className="w-4 h-4" />
+                      {isProcessing ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setSelectedOrder(null)}
+                    className="btn-primary px-6 py-2"
+                  >
+                    Done
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
