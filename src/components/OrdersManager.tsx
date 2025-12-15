@@ -26,6 +26,7 @@ interface Order {
   customer_email: string;
   customer_phone: string;
   shipping_address: string;
+  shipping_barangay: string;
   shipping_city: string;
   shipping_state: string;
   shipping_zip_code: string;
@@ -79,6 +80,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
         customer_email: editFormData.customer_email ?? selectedOrder.customer_email,
         customer_phone: editFormData.customer_phone ?? selectedOrder.customer_phone,
         shipping_address: editFormData.shipping_address ?? selectedOrder.shipping_address,
+        shipping_barangay: editFormData.shipping_barangay ?? selectedOrder.shipping_barangay,
         shipping_city: editFormData.shipping_city ?? selectedOrder.shipping_city,
         shipping_state: editFormData.shipping_state ?? selectedOrder.shipping_state,
         shipping_zip_code: editFormData.shipping_zip_code ?? selectedOrder.shipping_zip_code,
@@ -700,6 +702,15 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                             className="input-field w-full text-sm py-1.5 min-h-[60px]"
                           />
                         </div>
+                        <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Barangay</label>
+                          <input
+                            type="text"
+                            value={editFormData.shipping_barangay || ''}
+                            onChange={e => setEditFormData({ ...editFormData, shipping_barangay: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                          />
+                        </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">City</label>
@@ -758,6 +769,10 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                         <div className="flex items-start gap-3">
                           <span className="text-gray-500 w-20 shrink-0">Address:</span>
                           <span className="font-medium text-gray-900">{selectedOrder.shipping_address}</span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <span className="text-gray-500 w-20 shrink-0">Barangay:</span>
+                          <span className="font-medium text-gray-900">{selectedOrder.shipping_barangay}</span>
                         </div>
                         <div className="flex items-start gap-3">
                           <span className="text-gray-500 w-20 shrink-0">City/State:</span>
