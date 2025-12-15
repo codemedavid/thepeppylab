@@ -31,6 +31,7 @@ interface Order {
   shipping_state: string;
   shipping_zip_code: string;
   shipping_country: string;
+  courier_name: string | null;
   shipping_location: string | null;
   shipping_fee: number | null;
   order_items: OrderItem[];
@@ -80,6 +81,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
         customer_email: editFormData.customer_email ?? selectedOrder.customer_email,
         customer_phone: editFormData.customer_phone ?? selectedOrder.customer_phone,
         shipping_address: editFormData.shipping_address ?? selectedOrder.shipping_address,
+        courier_name: editFormData.courier_name ?? selectedOrder.courier_name,
         shipping_barangay: editFormData.shipping_barangay ?? selectedOrder.shipping_barangay,
         shipping_city: editFormData.shipping_city ?? selectedOrder.shipping_city,
         shipping_state: editFormData.shipping_state ?? selectedOrder.shipping_state,
@@ -124,6 +126,8 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (error) throw error;
+      console.log('Loaded orders:', data);
       setOrders(data || []);
     } catch (error) {
       console.error('Error loading orders:', error);
@@ -219,6 +223,35 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
     } catch (error) {
       console.error('Error updating payment status:', error);
       alert('Failed to update payment status. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleUpdateCourier = async (orderId: string, newCourier: string) => {
+    try {
+      setIsProcessing(true);
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          courier_name: newCourier || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Optimistic update
+      setOrders(prev => prev.map(o =>
+        o.id === orderId ? { ...o, courier_name: newCourier || null } : o
+      ));
+
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, courier_name: newCourier || null });
+      }
+    } catch (error) {
+      console.error('Error updating courier:', error);
+      alert('Failed to update courier. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -362,6 +395,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Courier</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Items</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Location</th>
@@ -430,6 +464,24 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                           >
                             <option value="pending">Pending</option>
                             <option value="paid">Paid</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="relative">
+                          <select
+                            value={order.courier_name || ''}
+                            onChange={(e) => handleUpdateCourier(order.id, e.target.value)}
+                            disabled={isProcessing}
+                            className={`appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-bold border-0 cursor-pointer focus:ring-2 focus:ring-offset-1 focus:ring-theme-accent transition-all ${order.courier_name
+                              ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                              }`}
+                          >
+                            <option value="">Not set</option>
+                            <option value="J&T">J&T Express</option>
+                            <option value="Lalamove">Lalamove</option>
                           </select>
                           <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
                         </div>
@@ -542,6 +594,19 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Location</span>
                       <span className="text-xs text-theme-accent font-semibold">{order.shipping_location || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm items-center">
+                      <span className="text-gray-500">Courier</span>
+                      <select
+                        value={order.courier_name || ''}
+                        onChange={(e) => handleUpdateCourier(order.id, e.target.value)}
+                        className="text-xs font-medium border-none bg-transparent text-right focus:ring-0 cursor-pointer text-gray-900"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <option value="">Not set</option>
+                        <option value="J&T">J&T</option>
+                        <option value="Lalamove">Lalamove</option>
+                      </select>
                     </div>
                   </div>
 
@@ -755,6 +820,18 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                           </div>
                         </div>
                         <div>
+                          <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Courier</label>
+                          <select
+                            value={editFormData.courier_name || ''}
+                            onChange={e => setEditFormData({ ...editFormData, courier_name: e.target.value })}
+                            className="input-field w-full text-sm py-1.5"
+                          >
+                            <option value="">Select Courier</option>
+                            <option value="J&T">J&T Express</option>
+                            <option value="Lalamove">Lalamove</option>
+                          </select>
+                        </div>
+                        <div>
                           <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Notes</label>
                           <textarea
                             value={editFormData.notes || ''}
@@ -785,6 +862,14 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                             <span className="text-gray-500 w-20 shrink-0">Location:</span>
                             <span className="font-medium text-theme-accent bg-theme-accent/5 px-2 py-0.5 rounded">
                               {selectedOrder.shipping_location}
+                            </span>
+                          </div>
+                        )}
+                        {selectedOrder.courier_name && (
+                          <div className="flex items-start gap-3">
+                            <span className="text-gray-500 w-20 shrink-0">Courier:</span>
+                            <span className="font-medium text-gray-900">
+                              {selectedOrder.courier_name}
                             </span>
                           </div>
                         )}

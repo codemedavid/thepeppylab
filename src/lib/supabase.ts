@@ -214,6 +214,7 @@ export type Database = {
           shipping_state: string;
           shipping_zip_code: string;
           shipping_country: string | null;
+          courier_name: string | null;
           shipping_location: string | null;
           shipping_fee: number;
           order_items: any; // JSONB
@@ -240,6 +241,7 @@ export type Database = {
           shipping_state: string;
           shipping_zip_code: string;
           shipping_country?: string | null;
+          courier_name?: string | null;
           shipping_location?: string | null;
           shipping_fee?: number;
           order_items: any;
@@ -266,6 +268,7 @@ export type Database = {
           shipping_state?: string;
           shipping_zip_code?: string;
           shipping_country?: string | null;
+          courier_name?: string | null;
           shipping_location?: string | null;
           shipping_fee?: number;
           order_items?: any;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X, Truck } from 'lucide-react';
 import type { CartItem } from '../types';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { useShippingLocations } from '../hooks/useShippingLocations';
@@ -29,6 +29,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
   const [state, setState] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [shippingLocation, setShippingLocation] = useState<'NCR' | 'LUZON' | 'VISAYAS_MINDANAO' | ''>('');
+  const [courierName, setCourierName] = useState('');
 
   // Payment
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
@@ -118,7 +119,10 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
     city.trim() !== '' &&
     state.trim() !== '' &&
     zipCode.trim() !== '' &&
-    shippingLocation !== '';
+    state.trim() !== '' &&
+    zipCode.trim() !== '' &&
+    shippingLocation !== '' &&
+    courierName !== '';
 
   const handleProceedToPayment = () => {
     if (isDetailsValid) {
@@ -185,6 +189,11 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
       return;
     }
 
+    if (!courierName) {
+      alert('Please select your preferred courier.');
+      return;
+    }
+
     if (!contactMethod) {
       alert('Please select your preferred contact method (Telegram).');
       return;
@@ -227,6 +236,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
           shipping_city: city,
           shipping_state: state,
           shipping_zip_code: zipCode,
+          courier_name: courierName,
           order_items: orderItems,
           total_price: totalPrice,
           shipping_fee: shippingFee,
@@ -344,6 +354,7 @@ Phone: ${phone}
 ${address}
 ${barangay}
 ${city}, ${state} ${zipCode}
+Courier: ${courierName}
 
 🛒 ORDER DETAILS
 ${cartItems.map(item => {
@@ -733,6 +744,29 @@ Please confirm this order. Thank you!
                       <p className="text-xs text-gray-500">₱{loc.fee.toLocaleString()}</p>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Courier Selection */}
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
+                  <Truck className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
+                  Preferred Courier *
+                </h2>
+                <div>
+                  <select
+                    value={courierName}
+                    onChange={(e) => setCourierName(e.target.value)}
+                    className="input-field cursor-pointer"
+                    required
+                  >
+                    <option value="">Select a courier</option>
+                    <option value="J&T">J&T Express</option>
+                    <option value="Lalamove">Lalamove</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Note: Actual courier availability may vary based on your location.
+                  </p>
                 </div>
               </div>
 
