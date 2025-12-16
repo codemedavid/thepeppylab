@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
                 >
                   <Calculator className="w-4 h-4" />
-                  Calculator
+                  Peptide Calculator
                 </button>
 
                 <button
@@ -78,17 +78,6 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
                 >
                   Lab Results (COA)
-                </button>
-
-                <button
-                  onClick={() => {
-                    window.location.href = '/calculator';
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
-                >
-                  <Calculator className="w-5 h-5" />
-                  Peptide Calculator
                 </button>
               </nav>
 

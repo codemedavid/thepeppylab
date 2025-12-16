@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calculator, FlaskConical, Syringe, RotateCcw, Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calculator, FlaskConical, Syringe, RotateCcw, Info, ArrowLeft } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -7,6 +7,7 @@ const PeptideCalculator = () => {
     const [vialAmountMg, setVialAmountMg] = useState<number>(5);
     const [waterAmountMl, setWaterAmountMl] = useState<number>(2);
     const [desiredDoseMcg, setDesiredDoseMcg] = useState<number>(250);
+    const [doseUnit, setDoseUnit] = useState<'mg' | 'mcg'>('mcg');
     const [result, setResult] = useState<{
         concentration: number;
         volumeMl: number;
@@ -59,6 +60,14 @@ const PeptideCalculator = () => {
             />
 
             <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+                <button
+                    onClick={() => window.location.href = '/'}
+                    className="text-gray-600 hover:text-theme-accent font-medium mb-6 flex items-center gap-2 transition-colors group"
+                >
+                    <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
+                    <span className="text-sm md:text-base">Back to Home</span>
+                </button>
+
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center justify-center p-3 bg-theme-secondary/20 rounded-2xl mb-4 text-theme-accent">
@@ -136,27 +145,56 @@ const PeptideCalculator = () => {
                                 {/* Desired Dose */}
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                                        Desired Dose (mcg)
+                                        Desired Dose
                                     </label>
+                                    <div className="flex gap-2 mb-2">
+                                        <button
+                                            onClick={() => setDoseUnit('mcg')}
+                                            className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg border transition-colors ${doseUnit === 'mcg' ? 'bg-theme-accent text-white border-theme-accent' : 'bg-white text-gray-500 border-gray-200 hover:border-theme-accent'}`}
+                                        >
+                                            mcg
+                                        </button>
+                                        <button
+                                            onClick={() => setDoseUnit('mg')}
+                                            className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg border transition-colors ${doseUnit === 'mg' ? 'bg-theme-accent text-white border-theme-accent' : 'bg-white text-gray-500 border-gray-200 hover:border-theme-accent'}`}
+                                        >
+                                            mg
+                                        </button>
+                                    </div>
                                     <div className="relative">
                                         <input
                                             type="number"
-                                            value={desiredDoseMcg}
-                                            onChange={(e) => setDesiredDoseMcg(Number(e.target.value))}
+                                            value={doseUnit === 'mcg' ? desiredDoseMcg : desiredDoseMcg / 1000}
+                                            onChange={(e) => {
+                                                const value = Number(e.target.value);
+                                                setDesiredDoseMcg(doseUnit === 'mcg' ? value : value * 1000);
+                                            }}
                                             className="w-full p-3 pl-4 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-theme-accent font-medium text-gray-900"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">mcg</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">{doseUnit}</span>
                                     </div>
                                     <div className="flex gap-2 mt-2 flex-wrap">
-                                        {[100, 250, 500, 1000].map(val => (
-                                            <button
-                                                key={val}
-                                                onClick={() => setDesiredDoseMcg(val)}
-                                                className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${desiredDoseMcg === val ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black'}`}
-                                            >
-                                                {val}mcg
-                                            </button>
-                                        ))}
+                                        {doseUnit === 'mcg' ? (
+                                            [100, 250, 500, 1000].map(val => (
+                                                <button
+                                                    key={val}
+                                                    onClick={() => setDesiredDoseMcg(val)}
+                                                    className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${desiredDoseMcg === val ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black'}`}
+                                                >
+                                                    {val}mcg
+                                                </button>
+                                            ))
+                                        ) : (
+                                            [0.1, 0.25, 0.5, 1].map(val => (
+                                                <button
+                                                    key={val}
+                                                    onClick={() => setDesiredDoseMcg(val * 1000)}
+                                                    className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${desiredDoseMcg === val * 1000 ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black'}`}
+                                                >
+                                                    {val}mg
+                                                </button>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-gray-100">
@@ -180,7 +218,9 @@ const PeptideCalculator = () => {
                             {result ? (
                                 <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden h-full flex flex-col">
                                     <div className="bg-gradient-to-r from-theme-text to-theme-accent p-6 text-white text-center">
-                                        <h3 className="text-lg font-medium opacity-90 mb-1">To get {desiredDoseMcg}mcg</h3>
+                                        <h3 className="text-lg font-medium opacity-90 mb-1">
+                                            To get {doseUnit === 'mcg' ? desiredDoseMcg + 'mcg' : (desiredDoseMcg / 1000) + 'mg'}
+                                        </h3>
                                         <div className="text-4xl md:text-5xl font-bold flex items-center justify-center gap-2 my-2">
                                             {Math.round(result.units * 10) / 10} <span className="text-xl md:text-2xl font-medium opacity-80">Units</span>
                                         </div>

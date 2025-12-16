@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X, Truck } from 'lucide-react';
 import type { CartItem } from '../types';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
-import { useShippingLocations } from '../hooks/useShippingLocations';
 import { supabase } from '../lib/supabase';
 import { useVouchers } from '../hooks/useVouchers';
 
@@ -14,7 +13,7 @@ interface CheckoutProps {
 
 const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) => {
   const { paymentMethods } = usePaymentMethods();
-  const { locations: shippingLocations, getShippingFee } = useShippingLocations();
+
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
 
   // Customer Details
@@ -65,7 +64,25 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   // Calculate shipping fee based on location (uses dynamic fees from database)
   // Calculate shipping fee based on location (uses dynamic fees from database)
-  const shippingFee = shippingLocation ? getShippingFee(shippingLocation) : 0;
+  // Calculate shipping fee based on courier selection
+  const getShippingFeeFromCourier = (courier: string): number => {
+    if (courier === 'J&T NCR') return 80;
+    if (courier === 'J&T Luzon') return 100;
+    if (courier === 'J&T Visayas') return 130;
+    if (courier === 'J&T Mindanao') return 150;
+    if (courier === 'LALAMOVE') return 0;
+    return 0;
+  };
+
+  // Auto-set shipping location based on courier
+  const getLocationFromCourier = (courier: string): 'NCR' | 'LUZON' | 'VISAYAS_MINDANAO' | '' => {
+    if (courier === 'J&T NCR' || courier === 'LALAMOVE') return 'NCR';
+    if (courier === 'J&T Luzon') return 'LUZON';
+    if (courier === 'J&T Visayas' || courier === 'J&T Mindanao') return 'VISAYAS_MINDANAO';
+    return '';
+  };
+
+  const shippingFee = courierName ? getShippingFeeFromCourier(courierName) : 0;
   const subtotalAfterVoucher = Math.max(0, totalPrice - (appliedVoucher?.discount_amount || 0));
   const finalTotal = subtotalAfterVoucher + shippingFee;
 
@@ -721,32 +738,6 @@ Please confirm this order. Thank you!
                 </div>
               </div>
 
-              {/* Shipping Location Selection */}
-              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
-                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-2 md:mb-3 flex items-center gap-2">
-                  <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
-                  Choose Shipping Location *
-                </h2>
-                <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
-                  Shipping rates apply to small pouches (4.1 × 9.5 inches) with a capacity of up to 3 pens. For bulk orders exceeding this size, our team will contact you for the adjusted shipping fees.
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {shippingLocations.map((loc) => (
-                    <button
-                      key={loc.id}
-                      onClick={() => setShippingLocation(loc.id as 'NCR' | 'LUZON' | 'VISAYAS_MINDANAO')}
-                      className={`p-3 rounded-lg border-2 transition-all ${shippingLocation === loc.id
-                        ? 'border-theme-accent bg-theme-accent/5'
-                        : 'border-gray-200 hover:border-theme-accent/50'
-                        }`}
-                    >
-                      <p className="font-semibold text-gray-900 text-sm">{loc.id.replace('_', ' & ')}</p>
-                      <p className="text-xs text-gray-500">₱{loc.fee.toLocaleString()}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Courier Selection */}
               <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
                 <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
@@ -756,16 +747,32 @@ Please confirm this order. Thank you!
                 <div>
                   <select
                     value={courierName}
-                    onChange={(e) => setCourierName(e.target.value)}
+                    onChange={(e) => {
+                      const newCourier = e.target.value;
+
+                      // Validate LALAMOVE restriction
+                      if (newCourier === 'LALAMOVE') {
+                        // LALAMOVE is only for NCR/Luzon, auto-set to NCR
+                        setCourierName(newCourier);
+                        setShippingLocation('NCR');
+                      } else {
+                        setCourierName(newCourier);
+                        // Auto-set shipping location based on courier
+                        setShippingLocation(getLocationFromCourier(newCourier));
+                      }
+                    }}
                     className="input-field cursor-pointer"
                     required
                   >
                     <option value="">Select a courier</option>
-                    <option value="J&T">J&T Express</option>
-                    <option value="Lalamove">Lalamove</option>
+                    <option value="J&T NCR">J&T NCR - ₱80</option>
+                    <option value="J&T Luzon">J&T Luzon - ₱100</option>
+                    <option value="J&T Visayas">J&T Visayas - ₱130</option>
+                    <option value="J&T Mindanao">J&T Mindanao - ₱150</option>
+                    <option value="LALAMOVE">LALAMOVE – Same Day Delivery - ₱0 (NCR & Luzon only)</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-2">
-                    Note: Actual courier availability may vary based on your location.
+                    Your parcel will be shipped from Malate, Manila. LALAMOVE is available for NCR and Luzon only.
                   </p>
                 </div>
               </div>
@@ -904,39 +911,6 @@ Please confirm this order. Thank you!
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
           {/* Payment Form */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            {/* Shipping Location Selection */}
-            <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
-              <h2 className="text-lg md:text-xl font-bold text-theme-text mb-2 md:mb-3 flex items-center gap-2">
-                <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
-                Choose Shipping Location *
-              </h2>
-              <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
-                Shipping rates apply to small pouches (4.1 × 9.5 inches) with a capacity of up to 3 pens. For bulk orders exceeding this size, our team will contact you for the adjusted shipping fees.
-              </p>
-              <div className="grid grid-cols-1 gap-3">
-                {shippingLocations.map((loc) => (
-                  <button
-                    key={loc.id}
-                    onClick={() => setShippingLocation(loc.id as 'NCR' | 'LUZON' | 'VISAYAS_MINDANAO')}
-                    className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${shippingLocation === loc.id
-                      ? 'border-theme-accent bg-theme-accent/5'
-                      : 'border-gray-200 hover:border-theme-accent/50'
-                      }`}
-                  >
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900">{loc.id.replace('_', ' & ')}</p>
-                      <p className="text-sm text-gray-500">₱{loc.fee.toLocaleString()}</p>
-                    </div>
-                    {shippingLocation === loc.id && (
-                      <div className="w-6 h-6 bg-theme-accent rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Payment Method Selection */}
             <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
               <h2 className="text-lg md:text-xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">

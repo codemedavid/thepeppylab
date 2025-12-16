@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCOA } from '../hooks/useCOA';
-import { FileCheck, X, ZoomIn } from 'lucide-react';
+import { FileCheck, X, ZoomIn, ArrowLeft } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -13,6 +13,14 @@ const COA: React.FC = () => {
             <Header cartItemsCount={0} onCartClick={() => { }} onMenuClick={() => window.location.href = '/'} />
 
             <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+                <button
+                    onClick={() => window.location.href = '/'}
+                    className="text-gray-600 hover:text-theme-accent font-medium mb-6 flex items-center gap-2 transition-colors group"
+                >
+                    <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
+                    <span className="text-sm md:text-base">Back to Home</span>
+                </button>
+
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center justify-center p-3 bg-white rounded-full shadow-sm mb-4">
                         <FileCheck className="w-8 h-8 text-theme-accent" />

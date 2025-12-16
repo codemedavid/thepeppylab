@@ -480,8 +480,11 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                               }`}
                           >
                             <option value="">Not set</option>
-                            <option value="J&T">J&T Express</option>
-                            <option value="Lalamove">Lalamove</option>
+                            <option value="J&T NCR">J&T NCR</option>
+                            <option value="J&T Luzon">J&T Luzon</option>
+                            <option value="J&T Visayas">J&T Visayas</option>
+                            <option value="J&T Mindanao">J&T Mindanao</option>
+                            <option value="LALAMOVE">LALAMOVE – Same Day Delivery</option>
                           </select>
                           <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
                         </div>
@@ -604,8 +607,11 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <option value="">Not set</option>
-                        <option value="J&T">J&T</option>
-                        <option value="Lalamove">Lalamove</option>
+                        <option value="J&T NCR">J&T NCR</option>
+                        <option value="J&T Luzon">J&T Luzon</option>
+                        <option value="J&T Visayas">J&T Visayas</option>
+                        <option value="J&T Mindanao">J&T Mindanao</option>
+                        <option value="LALAMOVE">LALAMOVE – Same Day Delivery</option>
                       </select>
                     </div>
                   </div>
@@ -827,8 +833,11 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                             className="input-field w-full text-sm py-1.5"
                           >
                             <option value="">Select Courier</option>
-                            <option value="J&T">J&T Express</option>
-                            <option value="Lalamove">Lalamove</option>
+                            <option value="J&T NCR">J&T NCR</option>
+                            <option value="J&T Luzon">J&T Luzon</option>
+                            <option value="J&T Visayas">J&T Visayas</option>
+                            <option value="J&T Mindanao">J&T Mindanao</option>
+                            <option value="LALAMOVE">LALAMOVE – Same Day Delivery</option>
                           </select>
                         </div>
                         <div>
