@@ -57,6 +57,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>('all');
   const [filterOrderStatus, setFilterOrderStatus] = useState<string>('all');
+  const [filterCourierStatus, setFilterCourierStatus] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -270,6 +271,25 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
       filtered = filtered.filter(o => o.order_status === filterOrderStatus);
     }
 
+    // Filter by Courier Status
+    if (filterCourierStatus !== 'all') {
+      if (filterCourierStatus === 'jt') {
+        filtered = filtered.filter(o => o.courier_name && o.courier_name.includes('J&T'));
+      } else if (filterCourierStatus === 'jt_ncr') {
+        filtered = filtered.filter(o => o.courier_name === 'J&T NCR');
+      } else if (filterCourierStatus === 'jt_luzon') {
+        filtered = filtered.filter(o => o.courier_name === 'J&T Luzon');
+      } else if (filterCourierStatus === 'jt_visayas') {
+        filtered = filtered.filter(o => o.courier_name === 'J&T Visayas');
+      } else if (filterCourierStatus === 'jt_mindanao') {
+        filtered = filtered.filter(o => o.courier_name === 'J&T Mindanao');
+      } else if (filterCourierStatus === 'lalamove') {
+        filtered = filtered.filter(o => o.courier_name === 'LALAMOVE');
+      } else if (filterCourierStatus === 'not_set') {
+        filtered = filtered.filter(o => !o.courier_name);
+      }
+    }
+
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -282,7 +302,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
     }
 
     return filtered;
-  }, [orders, filterPaymentStatus, filterOrderStatus, searchQuery]);
+  }, [orders, filterPaymentStatus, filterOrderStatus, filterCourierStatus, searchQuery]);
 
   // View Details Modal (Simplified for now, re-using parts of old logic if needed, but keeping it inline with table view)
   // For this implementation, we will render the table primarily. 
@@ -374,6 +394,28 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Courier Filter */}
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none z-10">
+              <Truck className="w-4 h-4" />
+            </div>
+            <select
+              value={filterCourierStatus}
+              onChange={(e) => setFilterCourierStatus(e.target.value)}
+              className="input-field !pl-10 text-sm w-full appearance-none cursor-pointer relative"
+            >
+              <option value="all">All Couriers</option>
+              <option value="jt">All J&T Express</option>
+              <option value="jt_ncr">J&T NCR</option>
+              <option value="jt_luzon">J&T Luzon</option>
+              <option value="jt_visayas">J&T Visayas</option>
+              <option value="jt_mindanao">J&T Mindanao</option>
+              <option value="lalamove">Lalamove</option>
+              <option value="not_set">Not Set</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>

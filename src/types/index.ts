@@ -117,3 +117,37 @@ export interface COA {
   image_url: string;
   created_at: string;
 }
+
+// Assessment Types
+export interface AssessmentResponse {
+  id: string;
+  full_name: string;
+  email: string;
+  age_range: string;
+  location: string;
+  goals: string[];
+  medical_history: string[];
+  experience_level: string;
+  preferences: {
+    budget?: string;
+    frequency?: string;
+    [key: string]: any;
+  };
+  consent_agreed: boolean;
+  recommendation_generated?: any;
+  created_at: string;
+  status: 'new' | 'reviewed' | 'contacted';
+}
+
+export interface RecommendationRule {
+  id: string;
+  rule_name: string;
+  target_goal: string;
+  target_experience: string;
+  primary_product_id: string | null;
+  secondary_product_ids: string[] | null;
+  educational_note: string | null;
+  priority: number;
+  is_active: boolean;
+  created_at: string;
+}

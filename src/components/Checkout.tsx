@@ -82,9 +82,13 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
     return '';
   };
 
+  // Check if shipping fee should be "to be discussed"
+  const isShippingTBD = courierName === 'LALAMOVE' && shippingLocation === 'NCR';
+
   const shippingFee = courierName ? getShippingFeeFromCourier(courierName) : 0;
   const subtotalAfterVoucher = Math.max(0, totalPrice - (appliedVoucher?.discount_amount || 0));
-  const finalTotal = subtotalAfterVoucher + shippingFee;
+  // Only add shipping fee to total if it's not TBD
+  const finalTotal = subtotalAfterVoucher + (isShippingTBD ? 0 : shippingFee);
 
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) {
@@ -389,8 +393,8 @@ ${cartItems.map(item => {
 💰 PRICING
 Product Total: ₱${totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
 ${appliedVoucher ? `Discount (${appliedVoucher.code}): -₱${appliedVoucher.discount_amount.toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : ''}
-Shipping Fee: ₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })} (${shippingLocation.replace('_', ' & ')})
-Grand Total: ₱${finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
+Shipping Fee: ${isShippingTBD ? 'To be discussed' : `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} (${shippingLocation.replace('_', ' & ')})
+Grand Total: ${isShippingTBD ? 'To be discussed' : `₱${finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}`}
 
 💳 PAYMENT METHOD
 ${paymentMethod?.name || 'N/A'}
@@ -866,7 +870,7 @@ Please confirm this order. Thank you!
                   <div className="flex justify-between text-gray-600 text-xs">
                     <span>Shipping</span>
                     <span className="font-medium text-gold-600">
-                      {shippingLocation ? `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : 'Select location'}
+                      {!shippingLocation ? 'Select location' : isShippingTBD ? 'To be discussed' : `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })}`}
                     </span>
                   </div>
                   <div className="border-t-2 border-gray-200 pt-3">
@@ -1079,17 +1083,30 @@ Please confirm this order. Thank you!
           <button
             onClick={handlePlaceOrder}
             disabled={!contactMethod || !shippingLocation || !paymentProof || uploading}
-            className={`btn-primary w-full ${(!contactMethod || !shippingLocation || !paymentProof || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`
+              w-full relative overflow-hidden group
+              bg-theme-accent text-white
+              py-4 md:py-5 px-6 rounded-xl
+              font-bold text-lg md:text-xl tracking-wide
+              shadow-lg hover:shadow-xl hover:shadow-theme-accent/30
+              transition-all duration-300 ease-out
+              transform hover:-translate-y-1 active:scale-[0.98]
+              flex items-center justify-center gap-3
+              border border-white/10
+              ${(!contactMethod || !shippingLocation || !paymentProof || uploading)
+                ? 'opacity-50 cursor-not-allowed grayscale'
+                : 'hover:brightness-110'}
+            `}
           >
             {uploading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Processing Order...
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
+                <span>Processing Order...</span>
               </>
             ) : (
               <>
-                <ShieldCheck className="w-6 h-6" />
-                Complete Order
+                <ShieldCheck className="w-6 h-6 md:w-7 md:h-7 transition-transform group-hover:scale-110" />
+                <span>Complete Order</span>
               </>
             )}
           </button>
@@ -1123,7 +1140,7 @@ Please confirm this order. Thank you!
               <div className="flex justify-between text-gray-600 text-xs">
                 <span>Shipping</span>
                 <span className="font-medium text-gold-600">
-                  {shippingLocation ? `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })} (${shippingLocation.replace('_', ' & ')})` : 'Select location'}
+                  {!shippingLocation ? 'Select location' : isShippingTBD ? 'To be discussed' : `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })} (${shippingLocation.replace('_', ' & ')})`}
                 </span>
               </div>
               <div className="border-t-2 border-gray-200 pt-3">

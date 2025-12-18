@@ -12,6 +12,8 @@ import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import COA from './components/COA';
 import PeptideCalculator from './components/PeptideCalculator';
+import AssessmentWizard from './pages/AssessmentWizard';
+import AssessmentResults from './pages/AssessmentResults';
 import { useMenu } from './hooks/useMenu';
 
 function MainApp() {
@@ -101,6 +103,8 @@ function App() {
         <Route path="/" element={<MainApp />} />
         <Route path="/coa" element={<COA />} />
         <Route path="/calculator" element={<PeptideCalculator />} />
+        <Route path="/assessment" element={<AssessmentWizard />} />
+        <Route path="/assessment/results" element={<AssessmentResults />} />
 
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>

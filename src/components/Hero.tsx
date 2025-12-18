@@ -1,11 +1,14 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type HeroProps = {
   onShopAll?: () => void;
 };
 
 const Hero: React.FC<HeroProps> = ({ onShopAll }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-theme-bg via-white to-theme-bg pt-12 pb-16 md:pt-20 md:pb-24 lg:pt-28 lg:pb-32 border-b-2 border-theme-secondary">
       {/* Abstract Background Shapes */}
@@ -49,9 +52,14 @@ const Hero: React.FC<HeroProps> = ({ onShopAll }) => {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
 
+            <button
+              className="btn-secondary w-full sm:w-auto group flex items-center justify-center gap-2 shadow-medium hover:shadow-lg"
+              onClick={() => navigate('/assessment')}
+            >
+              Start Assessment
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            </button>
           </div>
-
-
 
         </div>
       </div>
