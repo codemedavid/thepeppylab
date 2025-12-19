@@ -12,7 +12,6 @@ interface AssessmentFormData {
     medical_history: string[]; // Added
     experience_level: string;
     preferences: {
-        budget?: string;
         frequency?: string;
         [key: string]: any;
     };
@@ -28,7 +27,6 @@ const INITIAL_DATA: AssessmentFormData = {
     medical_history: [],
     experience_level: '',
     preferences: {
-        budget: '',
         frequency: '',
     },
     consent_agreed: false,
@@ -60,7 +58,6 @@ const MEDICAL_CONDITIONS = [
     'None of the above',
 ];
 
-const BUDGET_RANGES = ['Low (Budget-conscious)', 'Medium (Standard)', 'High (Premium)'];
 const FREQUENCIES = ['Daily', 'Weekly', 'As needed'];
 
 const TermsAndConditions: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -469,20 +466,6 @@ const AssessmentWizard: React.FC = () => {
                         <h3 className="text-2xl font-bold text-theme-text mb-4">Preferences</h3>
 
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Budget Preference</label>
-                                <select
-                                    value={formData.preferences.budget}
-                                    onChange={(e) => updatePreference('budget', e.target.value)}
-                                    className="input-field"
-                                >
-                                    <option value="">No Preference</option>
-                                    {BUDGET_RANGES.map((b) => (
-                                        <option key={b} value={b}>{b}</option>
-                                    ))}
-                                </select>
-                            </div>
-
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Frequency</label>
                                 <select

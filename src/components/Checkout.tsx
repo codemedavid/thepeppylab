@@ -16,9 +16,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
 
-  // Customer Details
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
   // Shipping Details
@@ -133,7 +131,6 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   const isDetailsValid =
     fullName.trim() !== '' &&
-    email.trim() !== '' &&
     phone.trim() !== '' &&
     address.trim() !== '' &&
     barangay.trim() !== '' &&
@@ -250,7 +247,6 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         .insert([{
           order_number: orderNumber,
           customer_name: fullName,
-          customer_email: email,
           customer_phone: phone,
           shipping_address: address,
           shipping_barangay: barangay,
@@ -368,7 +364,6 @@ ${orderData.order_number}
 
 👤 CUSTOMER INFORMATION
 Name: ${fullName}
-Email: ${email}
 Phone: ${phone}
 
 📦 SHIPPING ADDRESS
@@ -636,20 +631,7 @@ Please confirm this order. Thank you!
                       required
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="input-field"
-                      placeholder="juan@gmail.com"
-                      required
-                    />
-                  </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number *
                     </label>
@@ -1122,7 +1104,6 @@ Please confirm this order. Thank you!
             {/* Customer Info */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6 text-sm">
               <p className="font-semibold text-gray-900 mb-2">{fullName}</p>
-              <p className="text-gray-600">{email}</p>
               <p className="text-gray-600">{phone}</p>
               <div className="mt-3 pt-3 border-t border-gray-200 text-gray-600">
                 <p>{address}</p>
