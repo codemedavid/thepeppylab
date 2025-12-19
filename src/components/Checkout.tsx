@@ -785,6 +785,25 @@ Please confirm this order. Thank you!
               >
                 Proceed to Payment
               </button>
+
+              {/* Validation feedback - show which fields are missing */}
+              {!isDetailsValid && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700 font-medium mb-2">Please complete the following fields:</p>
+                  <ul className="text-xs text-red-600 space-y-1">
+                    {!fullName.trim() && <li>• Full Name</li>}
+                    {!email.trim() && <li>• Email Address</li>}
+                    {email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && <li>• Valid Email Address (check format)</li>}
+                    {!phone.trim() && <li>• Phone Number</li>}
+                    {!address.trim() && <li>• Street Address</li>}
+                    {!barangay.trim() && <li>• Barangay</li>}
+                    {!city.trim() && <li>• City</li>}
+                    {!state.trim() && <li>• Province</li>}
+                    {!zipCode.trim() && <li>• ZIP/Postal Code</li>}
+                    {!courierName && <li>• Preferred Courier</li>}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Order Summary Sidebar */}
