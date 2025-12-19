@@ -17,6 +17,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
 
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
   // Shipping Details
@@ -131,12 +132,12 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   const isDetailsValid =
     fullName.trim() !== '' &&
+    email.trim() !== '' &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     phone.trim() !== '' &&
     address.trim() !== '' &&
     barangay.trim() !== '' &&
     city.trim() !== '' &&
-    state.trim() !== '' &&
-    zipCode.trim() !== '' &&
     state.trim() !== '' &&
     zipCode.trim() !== '' &&
     shippingLocation !== '' &&
@@ -247,6 +248,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         .insert([{
           order_number: orderNumber,
           customer_name: fullName,
+          customer_email: email.trim(),
           customer_phone: phone,
           shipping_address: address,
           shipping_barangay: barangay,
@@ -628,6 +630,19 @@ Please confirm this order. Thank you!
                       onChange={(e) => setFullName(e.target.value)}
                       className="input-field"
                       placeholder="Juan Dela Cruz"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="input-field"
+                      placeholder="your.email@example.com"
                       required
                     />
                   </div>
