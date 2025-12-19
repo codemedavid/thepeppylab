@@ -17,7 +17,6 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
 
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
   // Shipping Details
@@ -132,8 +131,6 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   const isDetailsValid =
     fullName.trim() !== '' &&
-    email.trim() !== '' &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     phone.trim() !== '' &&
     address.trim() !== '' &&
     barangay.trim() !== '' &&
@@ -248,7 +245,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         .insert([{
           order_number: orderNumber,
           customer_name: fullName,
-          customer_email: email.trim(),
+          customer_email: `${phone.trim()}@noemail.peppy.ph`,
           customer_phone: phone,
           shipping_address: address,
           shipping_barangay: barangay,
@@ -633,19 +630,7 @@ Please confirm this order. Thank you!
                       required
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="input-field"
-                      placeholder="your.email@example.com"
-                      required
-                    />
-                  </div>
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number *
@@ -792,8 +777,7 @@ Please confirm this order. Thank you!
                   <p className="text-sm text-red-700 font-medium mb-2">Please complete the following fields:</p>
                   <ul className="text-xs text-red-600 space-y-1">
                     {!fullName.trim() && <li>• Full Name</li>}
-                    {!email.trim() && <li>• Email Address</li>}
-                    {email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && <li>• Valid Email Address (check format)</li>}
+
                     {!phone.trim() && <li>• Phone Number</li>}
                     {!address.trim() && <li>• Street Address</li>}
                     {!barangay.trim() && <li>• Barangay</li>}
