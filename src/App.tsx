@@ -14,6 +14,12 @@ import COA from './components/COA';
 import PeptideCalculator from './components/PeptideCalculator';
 import AssessmentWizard from './pages/AssessmentWizard';
 import AssessmentResults from './pages/AssessmentResults';
+import OrderTracking from './pages/OrderTracking';
+import FAQ from './pages/FAQ';
+import Guides from './pages/Guides';
+import GuideDetail from './pages/GuideDetail';
+import Articles from './pages/Articles';
+import ArticleDetail from './pages/ArticleDetail';
 import { useMenu } from './hooks/useMenu';
 
 function MainApp() {
@@ -105,6 +111,20 @@ function App() {
         <Route path="/calculator" element={<PeptideCalculator />} />
         <Route path="/assessment" element={<AssessmentWizard />} />
         <Route path="/assessment/results" element={<AssessmentResults />} />
+
+        {/* Order Tracking */}
+        <Route path="/track-order" element={<OrderTracking />} />
+
+        {/* FAQ */}
+        <Route path="/faq" element={<FAQ />} />
+
+        {/* Electronic Guides */}
+        <Route path="/guides" element={<Guides />} />
+        <Route path="/guides/:id" element={<GuideDetail />} />
+
+        {/* Articles/Knowledge Hub */}
+        <Route path="/articles" element={<Articles />} />
+        <Route path="/articles/:slug" element={<ArticleDetail />} />
 
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>

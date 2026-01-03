@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, MessageCircle, Calculator } from 'lucide-react';
+import { ShoppingCart, Menu, X, MessageCircle, Calculator, HelpCircle, BookOpen, FileText, Package } from 'lucide-react';
 
 interface HeaderProps {
   cartItemsCount: number;
@@ -79,6 +79,27 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 >
                   Lab Results (COA)
                 </button>
+
+                <button
+                  onClick={() => window.location.href = '/faq'}
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  FAQ
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/guides'}
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Guides
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/articles'}
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Articles
+                </button>
               </nav>
 
               {/* Cart Button */}
@@ -151,6 +172,51 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   Peptide Calculator
                 </button>
 
+                {/* New Features Section */}
+                <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      window.location.href = '/track-order';
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
+                  >
+                    <Package className="w-5 h-5" />
+                    <span className="text-sm font-medium">Track Order</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.location.href = '/faq';
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
+                  >
+                    <HelpCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">FAQ</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.location.href = '/guides';
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span className="text-sm font-medium">Guides</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.location.href = '/articles';
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span className="text-sm font-medium">Articles</span>
+                  </button>
+                </div>
+
+                {/* Contact Section */}
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                   <a
                     href="https://t.me/anntpl"

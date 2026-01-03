@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, FileCheck } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, FileCheck, BookOpen, HelpCircle, FileText, Image } from 'lucide-react';
 import type { Product } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useCategories } from '../hooks/useCategories';
@@ -12,6 +12,10 @@ import OrdersManager from './OrdersManager';
 import ShippingManager from './ShippingManager';
 import VoucherManager from './VoucherManager';
 import COAManager from './COAManager';
+import GuideManager from './GuideManager';
+import FAQManager from './FAQManager';
+import ArticleManager from './ArticleManager';
+import HeroSettingsManager from './HeroSettingsManager';
 
 const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -21,7 +25,7 @@ const AdminDashboard: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const { products, loading, addProduct, updateProduct, deleteProduct, refreshProducts } = useMenu();
   const { categories } = useCategories();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa' | 'guides' | 'faqs' | 'articles' | 'hero'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [managingVariationsProductId, setManagingVariationsProductId] = useState<string | null>(null);
@@ -1176,6 +1180,42 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
+  // Guides View
+  if (currentView === 'guides') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <GuideManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // FAQs View
+  if (currentView === 'faqs') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <FAQManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // Articles View
+  if (currentView === 'articles') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <ArticleManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // Hero Settings View
+  if (currentView === 'hero') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <HeroSettingsManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
   // Dashboard View
   return (
     <>
@@ -1374,6 +1414,42 @@ const AdminDashboard: React.FC = () => {
                     <FileCheck className="h-4 w-4 text-blue-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Manage COAs</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('guides')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-teal-50 rounded-lg">
+                    <BookOpen className="h-4 w-4 text-teal-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage Guides</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('faqs')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-amber-50 rounded-lg">
+                    <HelpCircle className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage FAQs</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('articles')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-indigo-50 rounded-lg">
+                    <FileText className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage Articles</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('hero')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-rose-50 rounded-lg">
+                    <Image className="h-4 w-4 text-rose-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Hero Settings</span>
                 </button>
               </div>
             </div>
