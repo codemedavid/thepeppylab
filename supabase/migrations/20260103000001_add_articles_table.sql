@@ -21,23 +21,23 @@ CREATE TABLE IF NOT EXISTS public.articles (
 -- Enable Row Level Security
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
--- Create policy for public read access (published articles only)
+-- Create policy for anonymous/public read access (published articles only)
 CREATE POLICY "Allow public read published articles" ON public.articles
-  FOR SELECT USING (is_published = true);
-
--- Create policy for authenticated users to manage articles
-CREATE POLICY "Allow authenticated insert articles" ON public.articles
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Allow authenticated update articles" ON public.articles
-  FOR UPDATE USING (true);
-
-CREATE POLICY "Allow authenticated delete articles" ON public.articles
-  FOR DELETE USING (true);
+  FOR SELECT TO anon USING (is_published = true);
 
 -- Create policy for authenticated users to read all articles (including drafts)
 CREATE POLICY "Allow authenticated read all articles" ON public.articles
   FOR SELECT TO authenticated USING (true);
+
+-- Create policy for authenticated users to manage articles
+CREATE POLICY "Allow authenticated insert articles" ON public.articles
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated update articles" ON public.articles
+  FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Allow authenticated delete articles" ON public.articles
+  FOR DELETE TO authenticated USING (true);
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS articles_slug_idx ON public.articles (slug);
