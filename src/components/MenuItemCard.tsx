@@ -78,12 +78,19 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
             src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              const img = e.currentTarget;
+              img.style.display = 'none';
+              img.parentElement?.querySelector('[data-fallback]')?.classList.remove('hidden');
+            }}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300">
-            <Package className="w-10 h-10" />
-          </div>
-        )}
+        ) : null}
+        <div
+          data-fallback
+          className={`w-full h-full flex items-center justify-center text-gray-300 ${product.image_url ? 'hidden absolute inset-0' : ''}`}
+        >
+          <Package className="w-10 h-10" />
+        </div>
 
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">

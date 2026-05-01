@@ -174,6 +174,7 @@ const Articles: React.FC = () => {
                                             src={featuredArticle.featured_image_url}
                                             alt={featuredArticle.title}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                         />
                                     ) : (
                                         <div className="absolute inset-0 flex items-center justify-center">
@@ -236,6 +237,7 @@ const Articles: React.FC = () => {
                                                 src={article.featured_image_url}
                                                 alt={article.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                             />
                                         ) : (
                                             <div className="absolute inset-0 flex items-center justify-center">
